@@ -6,6 +6,7 @@
 */
 
 #include "args.hpp"
+#include <system_error>
 
 namespace raytracer {
 
@@ -34,8 +35,13 @@ void Argument::TestIp(const std::string ip) {
 }
 
 void Argument::TestFile(std::string files) {
-    if (!std::filesystem::exists(files))
+    std::error_code ec;
+
+    if (!std::filesystem::exists(files, ec)) {
+        if (ec)
+            throw Error(files + " : " + ec.message() + ".\n");
         throw Error(files + " : File not found.\n");
+    }
 }
 
 Argument::Argument(int argc, char **argv) {

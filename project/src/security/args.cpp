@@ -12,12 +12,13 @@ namespace raytracer {
 
 std::size_t Argument::TestPort(std::string port) {
     std::size_t nb = 0;
+    std::size_t idx = 0;
     try {
-        nb = std::stoull(port);
+        nb = std::stoull(port, &idx);
     } catch (const std::exception&) {
         throw Error(port + " : Not a valid port.\n");
     }
-    if (nb == 0 || nb > 65535)
+    if (idx != port.size() || nb == 0 || nb > 65535)
         throw Error(port + " : Not a valid port.\n");
     return nb;
 }

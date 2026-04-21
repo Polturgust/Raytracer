@@ -6,11 +6,14 @@ project(raytracer CXX)
 
 add_executable(raytracer
     project/src/main.cpp
+    project/src/security/args.cpp
 )
 
 target_include_directories(raytracer
     PUBLIC
         project/includes
+        project/includes/security
+        project/includes/Error
 )
 
 target_compile_options(raytracer

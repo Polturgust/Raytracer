@@ -47,9 +47,9 @@ void Argument::TestFile(std::string files) {
 
 Argument::Argument(int argc, char **argv) {
     if (argc < 2)
-        throw Error("To few argument.\n");
+        throw Error("Too few argument.\n");
     if (argc > 4)
-        throw Error("To few argument.\n");
+        throw Error("Too few argument.\n");
     if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0)
         throw Warning("SAGE:\n\t./raytracer [-option] <SCENE_FILE> [...]\n\nSCENE_FILE:\n\tscene configuration"
         "\n\nOPTION:\n\tnone, -d, --default + <SCENE_FILE> : lunch the raytracer in default mode."
@@ -73,7 +73,7 @@ Argument::Argument(int argc, char **argv) {
     } else if (argc == 2)
         TestFile(std::string(argv[1]));
     else
-        throw Error("Invalide argument, try ./raytracer --help.\n");
+        throw Error("Invalid argument, try ./raytracer --help.\n");
 }
 
 

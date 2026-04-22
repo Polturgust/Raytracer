@@ -8,8 +8,10 @@
 #include "main.hpp"
 
 int main(int argc, char **argv) {
+    raytracer::Argument arg(argc, argv);
+
     try {
-        raytracer::Argument(argc, argv);
+        arg.Test();
     } catch (const IError& e) {
         if (e.code() == 84) {
             std::cerr << "Raytracer : " << e.what();
@@ -18,5 +20,24 @@ int main(int argc, char **argv) {
             std::cout << e.what();
         return 0;
     }
+    raytracer::CoreBuilder builder;
+    builder.SetMode(arg.GetType()).SetSceneFile(arg.GetSceneFile());
+    if (arg.GetType() == raytracer::SERVER)
+        builder.SetPort(static_cast<std::uint16_t>(arg.GetPort()));
+    if (arg.GetType() == raytracer::CLIENT)
+        builder.SetClientConnection(arg.GetIp(), static_cast<std::uint16_t>(arg.GetPort()));
+
+    try {
+        raytracer::Core core = builder.Build();
+        core.Run();
+    } catch (const IError& e) {
+        if (e.code() == 84) {
+            std::cerr << "Raytracer : " << e.what();
+            return 84;
+        }
+        std::cout << e.what();
+        return 0;
+    }
+
     return 0;
 }

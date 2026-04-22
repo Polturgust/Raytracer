@@ -1,3 +1,5 @@
 build/
 raytracer
 *.cfg
+.vscode
+bootsrap

@@ -15,6 +15,11 @@ add_executable(raytracer
     project/src/Manager/client/clientManager.cpp
     project/src/Manager/server/Poll.cpp
     project/src/Manager/server/ServerManager.cpp
+    project/src/math/Vector3D.cpp
+    project/src/math/Point3D.cpp
+    project/src/core/Ray.cpp
+    project/src/render/Rectangle3D.cpp
+    project/src/render/Camera.cpp
 )
 
 target_include_directories(raytracer
@@ -25,6 +30,7 @@ target_include_directories(raytracer
         project/includes/Manager/Default
         project/includes/Manager/client
         project/includes/Manager/server
+        project/includes/rt
         project/includes/security
         project/includes/Error
         ${LIBCONFIG_INCLUDE_DIRS}

@@ -45,7 +45,7 @@ void Argument::TestFile(std::string files) {
     }
 }
 
-Argument::Argument(int argc, char **argv) {
+void Argument::Test() {
     if (argc < 2)
         throw Error("Too few argument.\n");
     if (argc > 4)
@@ -59,20 +59,24 @@ Argument::Argument(int argc, char **argv) {
 
     std::string type = argv[1];
 
-    if ((type == "-d" || type == "--default") && argc == 3)
+    if ((type == "-d" || type == "--default") && argc == 3) {
         TestFile(argv[2]);
+        _sceneFile = argv[2];
+    }
     else if ((type == "-s" || type == "--server") && argc == 4) {
         _type = SERVER;
         TestFile(argv[2]);
+        _sceneFile = argv[2];
         _port = TestPort(argv[3]);
     } else if ((type == "-c" || type == "--client") && argc == 4) {
         _type = CLIENT;
         TestIp(argv[2]);
         _ip = argv[2];
         _port = TestPort(argv[3]);
-    } else if (argc == 2)
+    } else if (argc == 2) {
         TestFile(std::string(argv[1]));
-    else
+        _sceneFile = argv[1];
+    } else
         throw Error("Invalid argument, try ./raytracer --help.\n");
 }
 

@@ -7,11 +7,17 @@ project(raytracer CXX)
 add_executable(raytracer
     project/src/main.cpp
     project/src/security/args.cpp
+    project/src/math/Vector3D.cpp
+    project/src/math/Point3D.cpp
+    project/src/core/Ray.cpp
+    project/src/render/Rectangle3D.cpp
+    project/src/render/Camera.cpp
 )
 
 target_include_directories(raytracer
     PUBLIC
         project/includes
+        project/includes/rt
         project/includes/security
         project/includes/Error
 )

@@ -1,4 +1,4 @@
-#include "rt/render/Rectangle3D.hpp"
+#include "render/Rectangle3D.hpp"
 
 namespace raytracer::render {
 

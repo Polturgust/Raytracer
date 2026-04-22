@@ -1,4 +1,4 @@
-#include "rt/core/Ray.hpp"
+#include "core/Ray.hpp"
 
 namespace raytracer::core {
 

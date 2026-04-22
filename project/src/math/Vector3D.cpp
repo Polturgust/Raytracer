@@ -1,4 +1,4 @@
-#include "rt/math/Vector3D.hpp"
+#include "math/Vector3D.hpp"
 
 #include <stdexcept>
 

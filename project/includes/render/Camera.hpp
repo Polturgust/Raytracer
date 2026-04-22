@@ -1,8 +1,8 @@
 #pragma once
 
-#include "rt/core/Ray.hpp"
-#include "rt/math/Point3D.hpp"
-#include "rt/render/Rectangle3D.hpp"
+#include "core/Ray.hpp"
+#include "math/Point3D.hpp"
+#include "render/Rectangle3D.hpp"
 
 namespace raytracer::render {
 

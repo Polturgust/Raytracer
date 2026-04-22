@@ -1,4 +1,4 @@
-#include "rt/math/Point3D.hpp"
+#include "math/Point3D.hpp"
 
 namespace raytracer::math {
 

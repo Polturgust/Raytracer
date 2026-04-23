@@ -23,7 +23,10 @@ typedef enum {
 }raytracer_type;
 
 class Argument {
+    int argc;
+    char **argv;
     raytracer_type _type = DEFAULT;
+    std::string _sceneFile = "";
     std::string _ip = "";
     std::size_t _port = 0;
 
@@ -32,10 +35,12 @@ class Argument {
     void TestFile(std::string);
 
 public:
-    Argument(int argc, char **argv);
+    Argument(int argc, char **argv): argc(argc), argv(argv) {};
     ~Argument() = default;
 
+    void Test();
     raytracer_type GetType() {return _type;};
+    std::string GetSceneFile() {return _sceneFile;};
     std::size_t GetPort() {return _port;};
     std::string GetIp() {return _ip;};
 };

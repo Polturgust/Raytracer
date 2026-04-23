@@ -25,12 +25,13 @@ add_executable(raytracer
 target_include_directories(raytracer
     PUBLIC
         project/includes
-        project/includes/Core
+        project/includes/core
         project/includes/Manager
+        project/includes/math
+        project/includes/render
         project/includes/Manager/Default
         project/includes/Manager/client
         project/includes/Manager/server
-        project/includes/rt
         project/includes/security
         project/includes/Error
         ${LIBCONFIG_INCLUDE_DIRS}

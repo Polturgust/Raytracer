@@ -45,3 +45,34 @@ target_link_libraries(raytracer
     PRIVATE
         ${LIBCONFIG_LIBRARIES}
 )
+
+# Plugin compilation system
+# Automatically compile all plugins from the plugins/ directory
+# Each plugin directory should contain:
+#   - One or more .cpp files implementing the plugin
+#   - Optionally, custom includes (will use shared/ headers)
+# Output: raytracer_<plugin_name>.so in the plugins/ directory
+
+file(GLOB PLUGIN_DIRS "${CMAKE_SOURCE_DIR}/plugins/*")
+foreach(PLUGIN_DIR ${PLUGIN_DIRS})
+    if(IS_DIRECTORY "${PLUGIN_DIR}")
+        get_filename_component(PLUGIN_NAME ${PLUGIN_DIR} NAME)
+        file(GLOB_RECURSE PLUGIN_SRCS "${PLUGIN_DIR}/*.cpp")
+        if(PLUGIN_SRCS)
+            add_library(raytracer_${PLUGIN_NAME} SHARED ${PLUGIN_SRCS})
+            target_include_directories(raytracer_${PLUGIN_NAME}
+                PUBLIC
+                    shared/Light
+                    shared/Object
+                    shared/Texture
+            )
+            target_compile_options(raytracer_${PLUGIN_NAME}
+                PRIVATE
+                    -Wall
+                    -Wextra
+                    -Werror
+            )
+            message(STATUS "Building plugin: raytracer_${PLUGIN_NAME}.so")
+        endif()
+    endif()
+endforeach()

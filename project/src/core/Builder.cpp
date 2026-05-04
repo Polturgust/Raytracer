@@ -1,15 +1,11 @@
 /*
 ** EPITECH PROJECT, 2025
-** raytracer
+** G-OOP-400-NCE-4-1-raytracer-8
 ** File description:
 ** Builder.cpp
 */
 
 #include "Builder.hpp"
-#include "IManager.hpp"
-#include "Default/DefaultManager.hpp"
-#include "ServerManagr.hpp"
-#include "ClientManager.hpp"
 
 namespace raytracer {
 
@@ -42,17 +38,28 @@ std::unique_ptr<IManager> CoreBuilder::BuildManager() const {
     return std::make_unique<DefaultManager>();
 }
 
+std::unique_ptr<IReader> CoreBuilder::BuildReader() const {
+    if (_mode == CLIENT)
+        return nullptr;
+
+    if (_sceneFile.empty())
+        return nullptr;
+
+    auto pos = _sceneFile.rfind('.');
+    if (pos == std::string::npos)
+        return nullptr;
+
+    std::string ext = _sceneFile.substr(pos);
+    if (ext == ".cfg")
+        return std::make_unique<CfgReader>(_sceneFile);
+    if (ext == ".obj")
+        return nullptr;
+
+    return nullptr;
+}
+
 Core CoreBuilder::Build() const {
-    std::size_t width = 1;
-    std::size_t height = 1;
-
-    if (!_sceneFile.empty()) {
-        const auto resolution = Core::LoadResolution(_sceneFile);
-        width = resolution.first;
-        height = resolution.second;
-    }
-
-    return Core(width, height, BuildManager(), _sceneFile);
+    return Core(BuildReader(), BuildManager(), _sceneFile);
 }
 
 }

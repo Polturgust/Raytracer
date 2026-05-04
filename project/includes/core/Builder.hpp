@@ -13,6 +13,11 @@
 
     #include "Core.hpp"
     #include "args.hpp"
+    #include "CfgReader.hpp"
+    #include "IManager.hpp"
+    #include "DefaultManager.hpp"
+    #include "ServerManagr.hpp"
+    #include "ClientManager.hpp"
 
 namespace raytracer {
 
@@ -29,6 +34,7 @@ public:
     CoreBuilder& SetPort(std::uint16_t port);
 
     std::unique_ptr<IManager> BuildManager() const;
+    std::unique_ptr<IReader> BuildReader() const;
     Core Build() const;
 };
 

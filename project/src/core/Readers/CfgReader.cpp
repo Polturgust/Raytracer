@@ -1,0 +1,81 @@
+/*
+** EPITECH PROJECT, 2025
+** G-OOP-400-NCE-4-1-raytracer-8
+** File description:
+** CfgReader.cpp
+*/
+
+#include "CfgReader.hpp"
+
+namespace raytracer {
+
+void CfgReader::SetUp() {
+    try {
+        _cfg.readFile(_sceneFile.c_str());
+    } catch (const libconfig::FileIOException&) {
+        throw Error("Core: cannot read scene file '\"" + _sceneFile + "\"'.\n");
+    } catch (const libconfig::ParseException& ex) {
+        throw Error("Core: parse error in scene file '\"" + _sceneFile + "\"' at line "
+            + std::to_string(ex.getLine()) + ": " + ex.getError() + "\n");
+    }
+}
+
+const libconfig::Setting& CfgReader::CameraExist() {
+    const libconfig::Setting& root = _cfg.getRoot();
+    if (!root.exists("camera"))
+        throw Error("Core: missing 'camera' section in scene file.\n");
+    return root;
+}
+
+std::pair<std::size_t, std::size_t> CfgReader::GetCameraResolution() {
+    const libconfig::Setting& root = CameraExist();
+    const libconfig::Setting& camera = root["camera"];
+    if (!camera.exists("resolution"))
+        throw Error("Core: missing 'camera.resolution' section in scene file.\n");
+    const libconfig::Setting& resolution = camera["resolution"];
+
+    int width = 0, height = 0;
+    if (!resolution.lookupValue("width", width) || !resolution.lookupValue("height", height))
+        throw Error("Core: resolution width/height are missing in scene file.\n");
+    if (width <= 0 || height <= 0)
+        throw Error("Core: resolution width/height must be positive values.\n");
+
+    return {static_cast<std::size_t>(width), static_cast<std::size_t>(height)};
+}
+
+std::array<int, 3> CfgReader::GetCameraPosition() {
+    const libconfig::Setting& root = CameraExist();
+    const libconfig::Setting& camera = root["camera"];
+    if (!camera.exists("position"))
+        throw Error("Core: missing 'camera.position' section in scene file.\n");
+    const libconfig::Setting& position = camera["position"];
+
+    int x = 0, y = 0, z = 0;
+    if (!position.lookupValue("x", x) || !position.lookupValue("y", y) || !position.lookupValue("z", z))
+        throw Error("Core: position are missing in scene file.\n");
+    return {x, y, z};
+}
+
+std::array<int, 3> CfgReader::GetCameraRotation() {
+    const libconfig::Setting& root = CameraExist();
+    const libconfig::Setting& camera = root["camera"];
+    if (!camera.exists("rotation"))
+        throw Error("Core: missing 'camera.rotation' section in scene file.\n");
+    const libconfig::Setting& position = camera["rotation"];
+
+    int x = 0, y = 0, z = 0;
+    if (!position.lookupValue("x", x) || !position.lookupValue("y", y) || !position.lookupValue("z", z))
+        throw Error("Core: position are missing in scene file.\n");
+    return {x, y, z};
+}
+
+double CfgReader::GetCameraFieldOfView() {
+    const libconfig::Setting& root = CameraExist();
+    const libconfig::Setting& camera = root["camera"];
+    double fov = 0;
+    if (!camera.lookupValue("fieldOfView", fov))
+        throw Error("Core: missing 'camera.fieldOfView' section in scene file.\n");
+    return fov;
+}
+
+}

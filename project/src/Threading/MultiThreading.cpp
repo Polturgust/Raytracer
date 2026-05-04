@@ -11,9 +11,7 @@
 namespace raytracer {
 
 void SampleCalcul(const std::vector<IObject> objects, const std::vector<ILight> lights, Tile& Tile, const std::size_t x, const std::size_t y) {
-
     Tile.SetState(COMPUTING);
-    std::cout << "Je compute le pixel" << x << ":" << y << std::endl;
     (void)objects;
     (void)lights;
     Tile.SetColor({255,0,0});

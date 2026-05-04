@@ -7,25 +7,18 @@ project(raytracer CXX)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBCONFIG REQUIRED libconfig++)
 
-add_executable(raytracer
-    project/src/main.cpp
-    project/src/core/Core.cpp
-    project/src/core/Builder.cpp
-    project/src/security/args.cpp
-    project/src/Manager/client/clientManager.cpp
-    project/src/Manager/server/Poll.cpp
-    project/src/Manager/server/ServerManager.cpp
-    project/src/math/Vector3D.cpp
-    project/src/math/Point3D.cpp
-    project/src/core/Ray.cpp
-    project/src/render/Rectangle3D.cpp
-    project/src/render/Camera.cpp
+file(GLOB_RECURSE PROJECT_SRCS
+    ${CMAKE_SOURCE_DIR}/project/src/*.cpp
 )
+
+add_executable(raytracer ${PROJECT_SRCS})
 
 target_include_directories(raytracer
     PUBLIC
         project/includes
         project/includes/core
+        project/includes/core/reader
+        project/includes/core/reader/cfgReader
         project/includes/Manager
         project/includes/math
         project/includes/render
@@ -35,6 +28,9 @@ target_include_directories(raytracer
         project/includes/security
         project/includes/Error
         ${LIBCONFIG_INCLUDE_DIRS}
+        shared/Light
+        shared/Object
+        shared/Texture
 )
 
 target_compile_options(raytracer
@@ -42,9 +38,10 @@ target_compile_options(raytracer
         -Wall
         -Wextra
         -Werror
+        -lconfig++
 )
 
 target_link_libraries(raytracer
     PRIVATE
-    ${LIBCONFIG_LIBRARIES}
+        ${LIBCONFIG_LIBRARIES}
 )

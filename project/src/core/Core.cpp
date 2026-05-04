@@ -19,13 +19,13 @@ Core::Core(std::unique_ptr<IReader> reader, std::unique_ptr<IManager> manager, c
     map.resize(_y);
     for (auto& row : map)
         row.assign(_x, Tile({0, 0, 0}));
+    sfml.emplace(_x, _y);
 }
 
 void Core::Run() {
     while (_manager->GetState() != FINISH) {
         _manager->Update(Objects, Lights, map);
-        //tout autres methode DOIVENT prendre la map en const. seul update peut la changer. (tout comme les listes d'objets et de lights)
-        //sfml (const map)
+        sfml->render(map);
     }
     ppmconvertor.Draw(_sceneFile.substr(0, _sceneFile.rfind('.')) + ".ppm", map);
 }

@@ -13,6 +13,7 @@
     #include <utility>
     #include <vector>
     #include <libconfig.h++>
+    #include <optional>
 
     #include "IManager.hpp"
     #include "Error.hpp"
@@ -21,6 +22,7 @@
     #include "IObject.hpp"
     #include "ILight.hpp"
     #include "ppm.hpp"
+    #include "SfmlDisplay.hpp"
 
 namespace raytracer {
 
@@ -34,6 +36,7 @@ class Core {
     std::string _sceneFile;
 
     ToPpm ppmconvertor;
+    std::optional<Sfmldisplay> sfml;
 
     std::vector<IObject> Objects;
     std::vector<ILight> Lights;

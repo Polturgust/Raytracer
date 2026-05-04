@@ -12,11 +12,12 @@
     #include <string>
     #include <utility>
     #include <vector>
+    #include <libconfig.h++>
+
     #include "IManager.hpp"
     #include "Error.hpp"
-
-    #include <libconfig.h++>
     #include "Tile.hpp"
+    #include "IReader.hpp"
 
 namespace raytracer {
 
@@ -26,20 +27,16 @@ class Core {
     std::size_t _x;
     std::size_t _y;
     std::unique_ptr<IManager> _manager;
+    std::unique_ptr<IReader> _reader;
     std::string _sceneFile;
 
 public:
     std::vector<std::vector<Tile>> map;
 
-    Core(std::size_t x, std::size_t y, std::unique_ptr<IManager> manager, const std::string& sceneFile);
-    ~Core();
+    Core(std::unique_ptr<IReader> reader, std::unique_ptr<IManager> manager, const std::string& sceneFile);
+    ~Core() = default;
 
-    Core(const Core&) = delete;
-    Core& operator=(const Core&) = delete;
-    Core(Core&&) noexcept = default;
-    Core& operator=(Core&&) noexcept = default;
-
-    static std::pair<std::size_t, std::size_t> LoadResolution(const std::string& sceneFile);
+    static std::pair<std::size_t, std::size_t> LoadResolution();
     void Run();
 };
 

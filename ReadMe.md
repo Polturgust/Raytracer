@@ -13,4 +13,4 @@ sur linux :
 
 *installation des libs*
 WSL / linux :
-    sudo apt install cmake; sudo apt install libconfig++-dev; sudo apt install g++;
+    sudo apt install cmake; sudo apt install libconfig++-dev;

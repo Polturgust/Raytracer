@@ -6,6 +6,7 @@ project(raytracer CXX)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBCONFIG REQUIRED libconfig++)
+pkg_check_modules(SFML REQUIRED sfml-graphics sfml-window sfml-system)
 
 file(GLOB_RECURSE PROJECT_SRCS
     ${CMAKE_SOURCE_DIR}/project/src/*.cpp
@@ -16,6 +17,7 @@ add_executable(raytracer ${PROJECT_SRCS})
 target_include_directories(raytracer
     PUBLIC
         project/includes
+        project/includes/Display
         project/includes/Threading
         project/includes/core
         project/includes/core/ToFile
@@ -30,6 +32,7 @@ target_include_directories(raytracer
         project/includes/security
         project/includes/Error
         ${LIBCONFIG_INCLUDE_DIRS}
+        ${SFML_INCLUDE_DIRS}
         shared/Light
         shared/Object
         shared/Texture
@@ -41,11 +44,13 @@ target_compile_options(raytracer
         -Wextra
         -Werror
         -lconfig++
+        -lsfml
 )
 
 target_link_libraries(raytracer
     PRIVATE
         ${LIBCONFIG_LIBRARIES}
+        ${SFML_LIBRARIES}
 )
 
 # Plugin compilation system

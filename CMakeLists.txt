@@ -16,7 +16,9 @@ add_executable(raytracer ${PROJECT_SRCS})
 target_include_directories(raytracer
     PUBLIC
         project/includes
+        project/includes/Threading
         project/includes/core
+        project/includes/core/ToFile
         project/includes/core/reader
         project/includes/core/reader/cfgReader
         project/includes/Manager

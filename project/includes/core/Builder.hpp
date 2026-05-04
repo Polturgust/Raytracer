@@ -16,7 +16,7 @@
     #include "CfgReader.hpp"
     #include "IManager.hpp"
     #include "DefaultManager.hpp"
-    #include "ServerManagr.hpp"
+    #include "ServerManager.hpp"
     #include "ClientManager.hpp"
 
 namespace raytracer {

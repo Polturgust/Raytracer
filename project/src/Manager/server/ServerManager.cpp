@@ -5,13 +5,14 @@
 ** ServerManager.cpp
 */
 
-#include "ServerManagr.hpp"
+#include "ServerManager.hpp"
 
 namespace raytracer {
 
-void ServerManager::Update(std::vector<std::vector<Tile>>& map) {
+void ServerManager::Update(const std::vector<IObject> objects, const std::vector<ILight> lights, std::vector<std::vector<Tile>>& map) {
     (void)map;
-
+    (void)objects;
+    (void)lights;
     try {
         paul.paul(clients);
     } catch (const IError& e) {
@@ -20,13 +21,10 @@ void ServerManager::Update(std::vector<std::vector<Tile>>& map) {
         else
             std::cerr << "ServerManager: Poll warning : " << e.what();
     }
-
     for (auto it = clients.begin(); it != clients.end();) {
         Client& cl = *it;
-
         if (cl.doWrite && !cl.MsgQueu.empty()) {
             std::string message;
-
             for (const auto& entry : cl.MsgQueu) {
                 message += entry;
                 if (message.empty() || message.back() != '\n')

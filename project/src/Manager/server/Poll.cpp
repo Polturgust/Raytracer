@@ -5,7 +5,7 @@
 ** Poll.cpp
 */
 
-#include "ServerManagr.hpp"
+#include "ServerManager.hpp"
 
 namespace raytracer {
 

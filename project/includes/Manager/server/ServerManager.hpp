@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2025
 ** raytracer
 ** File description:
-** ServerManagr.hpp
+** ServerManager.hpp
 */
 
 #ifndef SERVERMANAGER_HPP
@@ -58,7 +58,7 @@ public:
     ServerManager(int port, std::string configFile): _configFile(configFile), paul(port) {};
     ~ServerManager() = default;
 
-    void Update(std::vector<std::vector<Tile>>& map) override;
+    void Update(const std::vector<IObject> objects, const std::vector<ILight> lights, std::vector<std::vector<Tile>>& map);
 };
 
 }

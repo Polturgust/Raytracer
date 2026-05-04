@@ -117,9 +117,11 @@ std::string ClientManager::PopMessage() {
     return message;
 }
 
-void ClientManager::Update(std::vector<std::vector<Tile>>& map)
+void ClientManager::Update(const std::vector<IObject> objects, const std::vector<ILight> lights, std::vector<std::vector<Tile>>& map)
 {
     (void)map;
+    (void)objects;
+    (void)lights;
     ConnectIfNeeded();
     _poller.Clear();
     _poller.Watch(_socket.Fd(), static_cast<short>(POLLIN | (_outgoing.empty() ? 0 : POLLOUT)));

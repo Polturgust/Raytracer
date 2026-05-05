@@ -14,6 +14,9 @@ void SampleCalcul(const std::vector<IObject> objects, const std::vector<ILight> 
     Tile.SetState(COMPUTING);
     (void)objects;
     (void)lights;
+    (void)x;
+    (void)y;
+    //(void)camera;
     Tile.SetColor({255,0,0});
     Tile.SetState(COMPUTED);
 }

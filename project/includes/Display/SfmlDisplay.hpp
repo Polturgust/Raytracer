@@ -7,6 +7,7 @@
 
 #ifndef SFMLDISPLAY_HPP
     #define SFMLDISPLAY_HPP
+    #include <cstddef>
     #include <vector>
     #include <SFML/Graphics.hpp>
 
@@ -14,37 +15,22 @@
 
 namespace raytracer {
 
-class Sfmldisplay {
-    sf::RenderWindow window;
+class SfmlDisplay {
+    sf::RenderWindow _window;
+    sf::Texture _texture;
+    sf::Sprite _sprite;
+    std::vector<sf::Uint8> _pixels;
+    void rebuildPixels(const std::vector<std::vector<Tile>>& map);
+
 public:
-    Sfmldisplay(std::size_t x, std::size_t y): window(sf::VideoMode(x, y), "Raytracer") {};
-    ~Sfmldisplay() {
-        window.close();
-    }
+    SfmlDisplay(std::size_t width, std::size_t height);
+    ~SfmlDisplay() = default;
 
-    void render(const std::vector<std::vector<Tile>>& map) {
-        window.clear();
-        int height = map.size();
-        int width  = map[0].size();
-
-        sf::Texture texture;
-        texture.create(width, height);
-        std::vector<sf::Uint8> data;
-        data.reserve(width * height * 4);
-        for (auto& row : map)
-            for (auto& pixel : row) {
-                data.push_back(pixel.GetRed());
-                data.push_back(pixel.GetGreen());
-                data.push_back(pixel.GetBlue());
-                data.push_back(255);
-            }
-        texture.update(data.data());
-        sf::Sprite sprite(texture);
-        window.draw(sprite);
-        window.display();
-    }
+    bool isOpen() const;
+    bool pollEvents();
+    void render(const std::vector<std::vector<Tile>>& map);
 };
 
-}
+} // namespace raytracer
 
 #endif

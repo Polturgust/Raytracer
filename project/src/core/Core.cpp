@@ -23,7 +23,10 @@ Core::Core(std::unique_ptr<IReader> reader, std::unique_ptr<IManager> manager, c
 }
 
 void Core::Run() {
-    while (_manager->GetState() != FINISH) {
+    while (_manager->GetState() != FINISH && sfml->isOpen()) {
+        if (!sfml->pollEvents()) {
+            break;
+        }
         _manager->Update(Objects, Lights, map);
         sfml->render(map);
     }

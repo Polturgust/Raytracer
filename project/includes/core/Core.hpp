@@ -36,7 +36,7 @@ class Core {
     std::string _sceneFile;
 
     ToPpm ppmconvertor;
-    std::optional<Sfmldisplay> sfml;
+    std::optional<SfmlDisplay> sfml;
 
     std::vector<IObject> Objects;
     std::vector<ILight> Lights;

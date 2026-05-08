@@ -33,7 +33,7 @@ target_include_directories(raytracer
         project/includes/Error
         ${LIBCONFIG_INCLUDE_DIRS}
         ${SFML_INCLUDE_DIRS}
-        shared/Light
+        shared/LIght
         shared/Object
         shared/Texture
 )
@@ -69,7 +69,7 @@ foreach(PLUGIN_DIR ${PLUGIN_DIRS})
             add_library(raytracer_${PLUGIN_NAME} SHARED ${PLUGIN_SRCS})
             target_include_directories(raytracer_${PLUGIN_NAME}
                 PUBLIC
-                    shared/Light
+                    shared/LIght
                     shared/Object
                     shared/Texture
             )

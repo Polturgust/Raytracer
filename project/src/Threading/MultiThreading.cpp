@@ -34,23 +34,19 @@ bool MultiThread::isEnd(void) {
     return 1;
 }
 
-int MultiThread::Compute(const std::vector<IObject> objects, const std::vector<ILight> lights, std::vector<Tile>& line, std::size_t y) {
+int MultiThread::Compute(const std::vector<IObject> objects, const std::vector<ILight> lights, std::vector< std::vector<Tile>>& map, std::size_t start, std::size_t max) {
     if (!isEnd())
         return 0;
     for (auto& t: thread)
         t.get();
     thread.clear();
-    int numThreads = std::thread::hardware_concurrency();
-    int chunkSize  = line.size() / numThreads;
 
-    for (int i = 0; i < numThreads; ++i) {
-        std::size_t start = i * chunkSize;
-        std::size_t end = (i == numThreads - 1) ? line.size() : start + chunkSize;
-
-        thread.push_back(std::async(std::launch::async, [objects, lights, start, end, &line, y]() {
-            for (std::size_t i = start; i < end; ++i) {
-                Tile &tile = line[i];
-                SampleCalcul(objects, lights, tile, i, y, line.size());
+    std::cout << "Computing line " << start << " to " << max << "." << std::endl;
+    for (std::size_t y = start; y < max; y++) {
+        thread.push_back(std::async(std::launch::async, [objects, lights, &map, y]() {
+            for (std::size_t i = 0; i < map[y].size(); ++i) {
+                Tile &tile = map[y][i];
+                SampleCalcul(objects, lights, tile, i, y, map[y].size());
             }
         }));
     }

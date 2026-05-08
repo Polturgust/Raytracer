@@ -10,6 +10,7 @@
     #include <vector>
     #include <future>
     #include <chrono>
+    #include <iostream>
 
     #include "Tile.hpp"
     #include "IObject.hpp"
@@ -19,12 +20,16 @@ namespace raytracer {
 
 class MultiThread {
     std::vector<std::future<void>> thread = {};
+    const int numThreads = std::thread::hardware_concurrency();
+
 public:
-    MultiThread() {};
+    MultiThread() {std::cout << numThreads << " thread Created."<< std::endl;};
     ~MultiThread() = default;
 
     bool isEnd(void);
-    int Compute(const std::vector<IObject> objects, const std::vector<ILight> lights, std::vector<Tile>& line, std::size_t y);
+    int Compute(const std::vector<IObject> objects, const std::vector<ILight> lights, std::vector< std::vector<Tile>>& line, std::size_t y, std::size_t max);
+
+    int GetTreadNumber(void) {return numThreads;};
 };
 
 }

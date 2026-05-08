@@ -18,6 +18,7 @@ target_include_directories(raytracer
     PUBLIC
         project/includes
         project/includes/Display
+        project/includes/Display/printer
         project/includes/Threading
         project/includes/core
         project/includes/core/ToFile

@@ -15,8 +15,12 @@ void DefaultManager::Update(const std::vector<IObject> objects, const std::vecto
         return;
     }
     _state = WORKING;
-    if (_multiThread.Compute(objects, lights, map[CalculatedRow], CalculatedRow)) {
-        CalculatedRow++;
+    int nb = _multiThread.GetTreadNumber();
+    int end = CalculatedRow + nb > map.size() ? map.size() : CalculatedRow + nb;
+    if (_multiThread.Compute(objects, lights, map, CalculatedRow, end)) {
+        _Printer.moveCursorUp(1);
+        _Printer.clearLine();
+        CalculatedRow = end;
     }
 }
 

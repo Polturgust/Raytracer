@@ -10,17 +10,24 @@
 namespace raytracer {
 
 void DefaultManager::Update(const std::vector<IObject> objects, const std::vector<ILight> lights, std::vector<std::vector<Tile>>& map) {
-    if (CalculatedRow == map.size()) {
+    _state = WORKING;
+    if (_multiThread.isEnd()) {
+        if (CalculingRow == CalculatedRow && CalculatedRow != 0)
+            _Printer.ClearNbLine(2);
+        else
+            _Printer.ClearNbLine(1);
+        int nb = _multiThread.GetTreadNumber();
+        int end = CalculatedRow + nb > map.size() ? map.size() : CalculatedRow + nb;
+        _multiThread.Compute(objects, lights, map, CalculatedRow, end, CalculingRow);
+        CalculatedRow = end;
+        _Printer.PrintLine(std::to_string((CalculingRow * 100) / map.size()) + "% Calculated.");
+    } else {
+        _Printer.ClearNbLine(1);
+        _Printer.PrintLine(std::to_string((CalculingRow * 100) / map.size()) + "% Calculated.");
+    }
+    if (CalculingRow == map.size()) {
         _state = FINISH;
         return;
-    }
-    _state = WORKING;
-    int nb = _multiThread.GetTreadNumber();
-    int end = CalculatedRow + nb > map.size() ? map.size() : CalculatedRow + nb;
-    if (_multiThread.Compute(objects, lights, map, CalculatedRow, end)) {
-        _Printer.moveCursorUp(1);
-        _Printer.clearLine();
-        CalculatedRow = end;
     }
 }
 

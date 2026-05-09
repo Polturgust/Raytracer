@@ -34,20 +34,19 @@ bool MultiThread::isEnd(void) {
     return 1;
 }
 
-int MultiThread::Compute(const std::vector<IObject> objects, const std::vector<ILight> lights, std::vector< std::vector<Tile>>& map, std::size_t start, std::size_t max) {
-    if (!isEnd())
-        return 0;
+int MultiThread::Compute(const std::vector<IObject> objects, const std::vector<ILight> lights, std::vector< std::vector<Tile>>& map, std::size_t start, std::size_t max, std::size_t& CalculingRow) {
     for (auto& t: thread)
         t.get();
     thread.clear();
 
     std::cout << "Computing line " << start << " to " << max << "." << std::endl;
     for (std::size_t y = start; y < max; y++) {
-        thread.push_back(std::async(std::launch::async, [objects, lights, &map, y]() {
+        thread.push_back(std::async(std::launch::async, [objects, lights, &map, y, &CalculingRow]() {
             for (std::size_t i = 0; i < map[y].size(); ++i) {
                 Tile &tile = map[y][i];
                 SampleCalcul(objects, lights, tile, i, y, map[y].size());
             }
+            CalculingRow++;
         }));
     }
     return 1;

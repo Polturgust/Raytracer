@@ -26,12 +26,14 @@ class CoreBuilder {
     std::string _sceneFile;
     std::string _ip;
     std::uint16_t _port = 0;
+    bool _noInit = 0;
 
 public:
     CoreBuilder& SetMode(raytracer_type mode);
     CoreBuilder& SetSceneFile(const std::string& sceneFile);
     CoreBuilder& SetClientConnection(const std::string& ip, std::uint16_t port);
     CoreBuilder& SetPort(std::uint16_t port);
+    CoreBuilder& SetNoInit(bool NoInit) {_noInit = NoInit; return *this;};
 
     std::unique_ptr<IManager> BuildManager() const;
     std::unique_ptr<IReader> BuildReader() const;

@@ -59,7 +59,7 @@ std::unique_ptr<IReader> CoreBuilder::BuildReader() const {
 }
 
 Core CoreBuilder::Build() const {
-    return Core(BuildReader(), BuildManager(), _sceneFile);
+    return Core(BuildReader(), BuildManager(), _sceneFile, _noInit);
 }
 
 }

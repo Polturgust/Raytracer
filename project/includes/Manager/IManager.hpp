@@ -9,6 +9,7 @@
     #define IMANAGER_HPP
     #include <vector>
 
+    #include "Core.hpp"
     #include "Tile.hpp"
     #include "IObject.hpp"
     #include "ILight.hpp"
@@ -21,11 +22,13 @@ typedef enum {
     WAIT,
 } State;
 
+class Core;
 class IManager {
 public:
     ~IManager() = default;
 
-    virtual void Update(const std::vector<IObject> objects, const std::vector<ILight> lights, std::vector<std::vector<Tile>>& map) = 0;
+    virtual void InitCore(Core& core) = 0;
+    virtual void Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, std::vector<std::vector<Tile>>& map) = 0;
     virtual State GetState(void) = 0;
 };
 

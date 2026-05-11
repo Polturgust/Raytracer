@@ -33,6 +33,7 @@ target_include_directories(raytracer
         project/includes/Manager/server
         project/includes/security
         project/includes/Error
+        project/includes/Lights
         ${LIBCONFIG_INCLUDE_DIRS}
         ${SFML_INCLUDE_DIRS}
         shared
@@ -70,6 +71,7 @@ foreach(PLUGIN_DIR ${PLUGIN_DIRS})
         file(GLOB_RECURSE PLUGIN_SRCS "${PLUGIN_DIR}/*.cpp")
         if(PLUGIN_SRCS)
             add_library(raytracer_${PLUGIN_NAME} SHARED ${PLUGIN_SRCS})
+            set_target_properties(raytracer_${PLUGIN_NAME} PROPERTIES PREFIX "")
             target_include_directories(raytracer_${PLUGIN_NAME}
                 PUBLIC
                     shared

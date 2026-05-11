@@ -13,7 +13,7 @@
 namespace raytracer {
 
 //juste un sample quoi
-void SampleCalcul(const std::vector<IObject> objects, const std::vector<ILight> lights, Tile& Tile, const std::size_t x, const std::size_t y, const std::size_t width) {
+void SampleCalcul(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, Tile& Tile, const std::size_t x, const std::size_t y, const std::size_t width) {
     Tile.SetState(COMPUTING);
     (void)objects;
     (void)lights;
@@ -34,14 +34,14 @@ bool MultiThread::isEnd(void) {
     return 1;
 }
 
-int MultiThread::Compute(const std::vector<IObject> objects, const std::vector<ILight> lights, std::vector< std::vector<Tile>>& map, std::size_t start, std::size_t max, std::size_t& CalculingRow) {
+int MultiThread::Compute(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, std::vector< std::vector<Tile>>& map, std::size_t start, std::size_t max, std::size_t& CalculingRow) {
     for (auto& t: thread)
         t.get();
     thread.clear();
 
     std::cout << "Computing line " << start << " to " << max << "." << std::endl;
     for (std::size_t y = start; y < max; y++) {
-        thread.push_back(std::async(std::launch::async, [objects, lights, &map, y, &CalculingRow]() {
+        thread.push_back(std::async(std::launch::async, [&objects, &lights, &map, y, &CalculingRow]() {
             for (std::size_t i = 0; i < map[y].size(); ++i) {
                 Tile &tile = map[y][i];
                 SampleCalcul(objects, lights, tile, i, y, map[y].size());

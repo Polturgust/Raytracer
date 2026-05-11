@@ -29,6 +29,8 @@ namespace raytracer {
 class IManager;
 
 class Core {
+    bool _init;
+
     std::size_t _x;
     std::size_t _y;
     std::unique_ptr<IManager> _manager;
@@ -38,15 +40,17 @@ class Core {
     ToPpm ppmconvertor;
     std::optional<SfmlDisplay> sfml;
 
-    std::vector<IObject> Objects;
-    std::vector<ILight> Lights;
+    std::vector<std::unique_ptr<IObject>> Objects;
+    std::vector<std::unique_ptr<ILight>> Lights;
 public:
     std::vector<std::vector<Tile>> map;
 
-    Core(std::unique_ptr<IReader> reader, std::unique_ptr<IManager> manager, const std::string& sceneFile);
+    Core(std::unique_ptr<IReader> reader, std::unique_ptr<IManager> manager, const std::string& sceneFile, bool NoInit);
     ~Core() = default;
 
     void Run();
+
+    void Init();
 };
 
 }

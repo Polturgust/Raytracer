@@ -53,7 +53,7 @@ void Argument::Test() {
     if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0)
         throw Warning("SAGE:\n\t./raytracer [-option] <SCENE_FILE> [...]\n\nSCENE_FILE:\n\tscene configuration"
         "\n\nOPTION:\n\tnone, -d, --default + <SCENE_FILE> : lunch the raytracer in default mode."
-        "\n\t-s, --server + <SCENE_FILE> <port> : lunch the raytracer in mode server on the port <posrt>."
+        "\n\t-s, --server + <SCENE_FILE> <port> : lunch the raytracer in mode server on the port <port>."
         "\n\t-c, --client + <ip> <port> \t   : lunch the raytracer in client mode and connect it at the ip <ip> and on the port <port>."
         "\n");
 

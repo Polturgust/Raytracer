@@ -78,4 +78,35 @@ double CfgReader::GetCameraFieldOfView() {
     return fov;
 }
 
+std::map<std::string, std::string> CfgReader::settingToParams(const libconfig::Setting& cfg, const std::string& prefix) {
+    std::map<std::string, std::string> params;
+    for (int i = 0; i < cfg.getLength(); ++i) {
+        const libconfig::Setting& field = cfg[i];
+        const char* rawName = field.getName();
+        std::string key = rawName ? (prefix.empty() ? rawName : prefix + "." + rawName) : prefix;
+        if (field.isGroup()) {
+            for (auto& kv : settingToParams(field, key))
+                params.emplace(kv.first, kv.second);
+            continue;
+        }
+        switch (field.getType()) {
+            case libconfig::Setting::TypeString:
+                params[key] = std::string(field.c_str() ? field.c_str() : "");
+                break;
+            case libconfig::Setting::TypeInt:
+                params[key] = std::to_string(static_cast<int>(field));
+                break;
+            case libconfig::Setting::TypeFloat:
+                params[key] = std::to_string(static_cast<double>(field));
+                break;
+            case libconfig::Setting::TypeBoolean:
+                params[key] = static_cast<bool>(field) ? "true" : "false";
+                break;
+            default:
+                params[key] = std::string(field.c_str() ? field.c_str() : "");
+        }
+    }
+    return params;
+}
+
 }

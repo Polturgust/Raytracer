@@ -117,7 +117,7 @@ std::string ClientManager::PopMessage() {
     return message;
 }
 
-void ClientManager::Update(const std::vector<IObject> objects, const std::vector<ILight> lights, std::vector<std::vector<Tile>>& map)
+void ClientManager::Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, std::vector<std::vector<Tile>>& map)
 {
     (void)map;
     (void)objects;
@@ -146,6 +146,11 @@ void ClientManager::Update(const std::vector<IObject> objects, const std::vector
         std::cout << message;
         std::cout.flush();
     }
+}
+
+void ClientManager::InitCore(Core& core) {
+    (void)core;
+    return;
 }
 
 }

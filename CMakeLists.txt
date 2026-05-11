@@ -24,15 +24,18 @@ target_include_directories(raytracer
         project/includes/core/ToFile
         project/includes/core/reader
         project/includes/core/reader/cfgReader
+        project/includes/core/reader/libld
         project/includes/Manager
         project/includes/math
         project/includes/render
-        project/includes/Manager/Default
+        project/includes/Manager/default
         project/includes/Manager/client
         project/includes/Manager/server
         project/includes/security
         project/includes/Error
         ${LIBCONFIG_INCLUDE_DIRS}
+        ${SFML_INCLUDE_DIRS}
+        shared
         shared/LIght
         shared/Object
         shared/Texture
@@ -69,6 +72,7 @@ foreach(PLUGIN_DIR ${PLUGIN_DIRS})
             add_library(raytracer_${PLUGIN_NAME} SHARED ${PLUGIN_SRCS})
             target_include_directories(raytracer_${PLUGIN_NAME}
                 PUBLIC
+                    shared
                     shared/LIght
                     shared/Object
                     shared/Texture

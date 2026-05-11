@@ -1,73 +1,124 @@
-sur windows :
-    PowerShell:
-        wsl --install
-    WSL:
-        sudo apt-get update;
-        mkdir  ~/raytracer/ && cp -r ./* ~/raytracer/ && cd ~/raytracer
-        *installer les libs*
+# Raytracer — README
 
+## Installation (WSL / Linux)
 
-sur linux :
-    *installer les libs*
-    cmake . -B build
+1. Installer les dépendances système :
 
-*installation des libs*
-WSL / linux :
-    sudo apt install cmake; sudo apt install libconfig++-dev;
-
----
-
-## Système de Plugins (.so)
-
-Le projet supporte la compilation automatique de plugins en tant que bibliothèques partagées (`.so`).
-
-### Structure
-
-```
-plugins/
-├── plugin1/
-│   ├── Plugin1.cpp
-│   ├── Plugin1.hpp (optionnel, dans le répertoire)
-│   └── ... (autres fichiers)
-├── plugin2/
-│   ├── Plugin2.cpp
-│   └── ...
-└── raytracer_plugin1.so (généré)
+```bash
+sudo apt update
+sudo apt install -y cmake libconfig++-dev build-essential
 ```
 
-### Comment créer un plugin
-
-1. **Créer un dossier** dans `plugins/` avec le nom de ton plugin
-2. **Ajouter des fichiers .cpp** contenant l'implémentation
-3. **Utiliser les headers partagés** depuis `shared/` :
-   - `shared/Light/` pour les lumières
-   - `shared/Object/` pour les objets
-   - `shared/Texture/` pour les textures
-
-### Exemple
-
-```cpp
-// plugins/my_light/MyLight.cpp
-#include "ALight.hpp"
-
-class MyLight : public ALight {
-    void Render() override {
-        // implémentation
-    }
-};
-```
-
-### Compilation
+2. Générer la build et compiler :
 
 ```bash
 cmake . -B build
-cd build
-make
+cmake --build build
 ```
 
-Les plugins seront automatiquement compilés et placés dans `plugins/` avec le nom `raytracer_<nom_du_plugin>.so`
+3. (Optionnel) Sur Windows, installez WSL puis suivez les étapes ci‑dessus dans la distribution Linux.
 
-### Notes
+## Structure de projet
 
-- Chaque plugin a accès à tous les headers dans `shared/`
-- Les compilations flags appliqués : `-Wall -Wextra -Werror`
+Le projet contient :
+
+- `project/` : code source C++
+- `plugins/` : dossiers de plugins (un plugin par dossier)
+- `shared/` : en-têtes partagés (IObject, ILight, etc.)
+
+---
+
+## Système de plugins (.so)
+
+Le moteur charge dynamiquement des plugins compilés en bibliothèques partagées `.so`. Un plugin doit fournir soit un objet (IObject), soit une lumière (ILight) — compilé en `raytracer_<nom>.so`.
+
+### Arborescence d'un plugin
+
+```
+plugins/
+  <nom_du_plugin>/
+    fichier.cpp
+    fichier.hpp
+    README.md       # description des paramètres attendus
+    (pas de sous-dossiers)
+```
+
+Le CMake du projet produit `raytracer_<nom_du_plugin>.so` à partir du dossier.
+
+### Includes
+
+- Inclure `ILight.hpp` ou `IObject.hpp` selon le type du plugin.
+- Les en-têtes dans `shared/` sont disponibles globalement — n'utilisez pas de chemins relatifs.
+
+### Fonctions obligatoires
+
+Chaque plugin doit exposer deux fonctions `extern "C"` :
+
+1. `GetSoType()` — renvoie le type du plugin (enum `SoTypeEnum` dans `shared/SoType.hpp`) :
+
+```cpp
+extern "C" SoTypeEnum GetSoType(void) {
+    return OBJECT; // ou LIGHT
+}
+```
+
+2. `GetObject()` ou `GetLight()` — constructeur exposé qui prend une `std::map<std::string, std::string>` :
+
+```cpp
+extern "C" IObject* GetObject(std::map<std::string, std::string> params) {
+    return new MonObjet(params);
+}
+
+// ou pour une lumière :
+extern "C" ILight* GetLight(std::map<std::string, std::string> params) {
+    return new MaLumiere(params);
+}
+```
+
+L'instance retournée doit être construite à partir de la map de paramètres (voir section suivante).
+
+### Paramètres — format attendu
+
+Les paramètres sont extraits du fichier `.cfg` et fournis au plugin sous forme d'une `map` clé-valeur.
+
+Exemple `.cfg` :
+
+```
+primitives: {
+  spheres: [
+    { x = 60; y = 5; z = 40; r = 25; color = { r = 255; g = 64; b = 64; }; }
+  ]
+}
+```
+
+La map générée par le parser (notation pointée pour les valeurs imbriquées) :
+
+| Clé | Valeur |
+|-----|--------|
+| `x` | `60` |
+| `y` | `5` |
+| `z` | `40` |
+| `r` | `25` |
+| `color.r` | `255` |
+| `color.g` | `64` |
+| `color.b` | `64` |
+
+Pour les champs imbriqués, utilisez `.` pour accéder aux sous-champs (ex : `color.r`).
+
+Chaque plugin doit documenter les paramètres attendus dans son propre `README.md` au sein du dossier du plugin.
+
+---
+
+## Compilation des plugins
+
+Après avoir configuré et compilé le projet (voir section Installation), les plugins présents dans `plugins/` seront automatiquement compilés si le CMake du projet est configuré pour ça. Le binaire final du plugin sera nommé `raytracer_<nom>.so`.
+
+Flags de compilation courants : `-Wall -Wextra -Werror`.
+
+---
+
+## Notes utiles
+
+- Les headers dans `shared/` sont fournis au build, pas besoin de chemins relatifs.
+- Si un plugin ne se charge pas, vérifiez les messages d'erreur au runtime (le loader affiche les erreurs `dlopen`/`dlsym`).
+- Documentez toujours les paramètres de chaque plugin dans son `README.md` pour faciliter l'intégration.

@@ -45,15 +45,15 @@ target_compile_options(raytracer
     PRIVATE
         -Wall
         -Wextra
-        -Werror
-        -lconfig++
-        -lsfml
+    -Werror
 )
 
 target_link_libraries(raytracer
     PRIVATE
         ${LIBCONFIG_LIBRARIES}
-        ${SFML_LIBRARIES}
+    sfml-graphics
+    sfml-window
+    sfml-system
 )
 
 # Plugin compilation system

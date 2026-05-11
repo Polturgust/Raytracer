@@ -9,8 +9,15 @@
 
 namespace raytracer {
 
-Core::Core(std::unique_ptr<IReader> reader, std::unique_ptr<IManager> manager, const std::string& sceneFile)
+Core::Core(std::unique_ptr<IReader> reader, std::unique_ptr<IManager> manager, const std::string& sceneFile, bool NoInit)
     : _x(0), _y(0), _manager(std::move(manager)), _reader(std::move(reader)), _sceneFile(sceneFile) {
+    _init = NoInit ? false : true;
+    if (NoInit)
+        return;
+    this->Init();
+}
+
+void Core::Init() {
     if (_reader) {
         std::pair<size_t, size_t> size = _reader->GetCameraResolution();
         _x = size.first;
@@ -20,17 +27,26 @@ Core::Core(std::unique_ptr<IReader> reader, std::unique_ptr<IManager> manager, c
     for (auto& row : map)
         row.assign(_x, Tile({0, 0, 0}));
     sfml.emplace(_x, _y);
+    try {
+        Objects = _reader->GetObjects();
+        Lights = _reader->GetLights();
+    } catch (const IError& e) {
+        if (e.code() == 84)
+            throw Error("Core : " + static_cast<std::string>(e.what()));
+    }
 }
 
 void Core::Run() {
+    while (!_init)
+        _manager->InitCore(*this);
     while (_manager->GetState() != FINISH && sfml->isOpen()) {
-        if (!sfml->pollEvents()) {
+        if (!sfml->pollEvents())
             break;
-        }
         _manager->Update(Objects, Lights, map);
         sfml->render(map);
     }
-    ppmconvertor.Draw(_sceneFile.substr(0, _sceneFile.rfind('.')) + ".ppm", map);
+    if (!_sceneFile.empty())
+        ppmconvertor.Draw(_sceneFile.substr(0, _sceneFile.rfind('.')) + ".ppm", map);
 }
 
 }

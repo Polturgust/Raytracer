@@ -44,18 +44,28 @@ static double parseDouble(const std::map<std::string, std::string>& p,
                           const std::string& key, double def = 0.0)
 {
     auto it = p.find(key);
-    if (it == p.end()) return def;
-    try { return std::stod(it->second); }
-    catch (...) { return def; }
+    if (it == p.end())
+        return def;
+    try {
+        return std::stod(it->second);
+    }
+    catch (...) {
+        return def;
+    }
 }
 
 static int parseInt(const std::map<std::string, std::string>& p,
                     const std::string& key, int def = 255)
 {
     auto it = p.find(key);
-    if (it == p.end()) return def;
-    try { return std::stoi(it->second); }
-    catch (...) { return def; }
+    if (it == p.end())
+        return def;
+    try {
+        return std::stoi(it->second);
+    }
+    catch (...) {
+        return def;
+    }
 }
 
 extern "C" {

@@ -34,21 +34,14 @@ math::Point3D Plane::GetPosition() const
 
 bool Plane::Intersect(const core::Ray& ray, double& distance) const
 {
-    // Plane equation: dot(point - origin, normal) = 0
-    // Ray equation: point = ray_origin + t * ray_direction
-    // Substitute: dot(ray_origin + t * ray_direction - origin, normal) = 0
-    // Solve for t: t = dot(origin - ray_origin, normal) / dot(ray_direction, normal)
-
     const double denom = ray.direction.dot(_normal);
 
-    // Ray is parallel to plane (or pointing away)
     if (std::abs(denom) < 0.0001)
         return false;
 
     const math::Vector3D oc = _origin - ray.origin;
     const double t = oc.dot(_normal) / denom;
 
-    // Check if intersection is in front of camera
     if (t > 0.001) {
         distance = t;
         return true;
@@ -58,7 +51,7 @@ bool Plane::Intersect(const core::Ray& ray, double& distance) const
 
 math::Vector3D Plane::GetNormal(const math::Point3D& point) const
 {
-    (void)point;  // Normal is constant for a plane
+    (void)point;
     return _normal;
 }
 

@@ -1,20 +1,25 @@
 #pragma once
 
-#include "core/Ray.hpp"
+#include <array>
+#include <cstddef>
+#include <utility>
+
 #include "math/Point3D.hpp"
-#include "render/Rectangle3D.hpp"
 
 namespace raytracer::render {
 
 class Camera {
 public:
-    math::Point3D origin;
-    Rectangle3D viewport;
+    std::array<int, 3> position {0, 0, 0};
+    std::array<int, 3> rotation {0, 0, 0};
+    std::pair<std::size_t, std::size_t> resolution {0, 0};
+    double fieldOfView = 60.0;
 
     Camera();
-    Camera(const math::Point3D &originPoint, const Rectangle3D &viewportRectangle);
-
-    core::Ray ray(double u, double v) const;
+    Camera(const std::array<int, 3>& cameraPosition,
+        const std::array<int, 3>& cameraRotation,
+        std::pair<std::size_t, std::size_t> cameraResolution,
+        double cameraFieldOfView);
 };
 
 } // namespace raytracer::render

@@ -42,8 +42,7 @@ void Core::Init() {
 }
 
 void Core::Run() {
-    while (!_init)
-        _manager->InitCore(*this);
+    _manager->InitCore(*this);
     while (_manager->GetState() != FINISH && sfml->isOpen()) {
         if (!sfml->pollEvents())
             break;

@@ -15,11 +15,12 @@ class AManager : public IManager {
 protected:
     State _state = WAIT;
     MultiThread _multiThread;
+    Core* _core = nullptr;
 public:
     AManager() {};
     ~AManager() = default;
 
-    void InitCore(Core& core) {(void)core;};
+    void InitCore(Core& core) { _core = &core; };
     void Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, std::vector<std::vector<Tile>>& map) = 0;
     State GetState(void) {return _state;};
 };

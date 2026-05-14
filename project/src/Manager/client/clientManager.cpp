@@ -117,12 +117,11 @@ std::string ClientManager::PopMessage() {
     return message;
 }
 
-void ClientManager::Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map)
+void ClientManager::Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, std::vector<std::vector<Tile>>& map)
 {
     (void)map;
     (void)objects;
     (void)lights;
-    (void)camera;
     ConnectIfNeeded();
     _poller.Clear();
     _poller.Watch(_socket.Fd(), static_cast<short>(POLLIN | (_outgoing.empty() ? 0 : POLLOUT)));

@@ -75,7 +75,7 @@ public:
     bool HasMessage() const;
     std::string PopMessage();
 
-    void Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map);
+    void Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, std::vector<std::vector<Tile>>& map);
     void InitCore(Core& core);
 };
 

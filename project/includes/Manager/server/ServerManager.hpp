@@ -58,7 +58,7 @@ public:
     ServerManager(int port, std::string configFile): _configFile(configFile), paul(port) {};
     ~ServerManager() = default;
 
-    void Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map);
+    void Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, std::vector<std::vector<Tile>>& map);
 };
 
 }

@@ -17,7 +17,7 @@
 namespace raytracer::plugins {
 
 Sphere::Sphere(const math::Point3D& center, double radius, const std::array<int, 3>& color)
-    : _center(center), _radius(radius), _color(color)
+    : AObject(nullptr), _center(center), _radius(radius), _color(color)
 {
     if (radius < 0.0)
         throw std::runtime_error("Sphere radius cannot be negative");

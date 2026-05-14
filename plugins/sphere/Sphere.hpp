@@ -12,14 +12,14 @@
 #include <map>
 #include <string>
 
-#include "IObject.hpp"
+#include "AObject.hpp"
 #include "core/Ray.hpp"
 #include "math/Point3D.hpp"
 #include "math/Vector3D.hpp"
 
 namespace raytracer::plugins {
 
-class Sphere : public IObject {
+class Sphere : public AObject {
 private:
     math::Point3D _center;
     double _radius;

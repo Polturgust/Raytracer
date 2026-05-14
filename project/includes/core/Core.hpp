@@ -51,9 +51,8 @@ public:
     ~Core() = default;
 
     void Run();
+
     void Init();
-    
-    const render::Camera& GetCamera() const { return _camera; }
 };
 
 }

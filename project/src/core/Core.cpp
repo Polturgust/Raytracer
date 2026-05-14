@@ -46,7 +46,7 @@ void Core::Run() {
     while (_manager->GetState() != FINISH && sfml->isOpen()) {
         if (!sfml->pollEvents())
             break;
-        _manager->Update(Objects, Lights, map);
+        _manager->Update(Objects, Lights, _camera, map);
         sfml->render(map);
     }
     if (!_sceneFile.empty())

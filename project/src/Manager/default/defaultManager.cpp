@@ -9,7 +9,7 @@
 
 namespace raytracer {
 
-void DefaultManager::Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, std::vector<std::vector<Tile>>& map) {
+void DefaultManager::Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map) {
     _state = WORKING;
     if (_multiThread.isEnd()) {
         if (CalculatedRow != 0) {
@@ -20,7 +20,7 @@ void DefaultManager::Update(const std::vector<std::unique_ptr<IObject>>& objects
         }
         int nb = _multiThread.GetTreadNumber();
         int end = CalculatedRow + nb > map.size() ? map.size() : CalculatedRow + nb;
-        _multiThread.Compute(objects, lights, _core->GetCamera(), map, CalculatedRow, end, CalculingRow);
+        _multiThread.Compute(objects, lights, camera, map, CalculatedRow, end, CalculingRow);
         CalculatedRow = end;
         _Printer.PrintLine(std::to_string((CalculingRow * 100) / map.size()) + "% Calculated.");
     } else {

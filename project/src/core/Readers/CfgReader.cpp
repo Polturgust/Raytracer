@@ -83,16 +83,20 @@ std::map<std::string, std::string> CfgReader::settingToParams(const libconfig::S
     for (int i = 0; i < cfg.getLength(); ++i) {
         const libconfig::Setting& field = cfg[i];
         const char* rawName = field.getName();
-        std::string key = rawName ? (prefix.empty() ? rawName : prefix + "." + rawName) : prefix;
-        if (field.isGroup()) {
+        std::string key = rawName ? (prefix.empty() ? std::string(rawName) : prefix + "." + std::string(rawName)) : prefix;
+        
+        if (field.isGroup() || field.isArray()) {
             for (auto& kv : settingToParams(field, key))
                 params.emplace(kv.first, kv.second);
             continue;
         }
         switch (field.getType()) {
-            case libconfig::Setting::TypeString:
-                params[key] = std::string(field.c_str() ? field.c_str() : "");
+            case libconfig::Setting::TypeString: {
+                const char* strVal = field.c_str();
+                std::string strValue = strVal ? strVal : "";
+                params[key] = strValue;
                 break;
+            }
             case libconfig::Setting::TypeInt:
                 params[key] = std::to_string(static_cast<int>(field));
                 break;
@@ -103,7 +107,7 @@ std::map<std::string, std::string> CfgReader::settingToParams(const libconfig::S
                 params[key] = static_cast<bool>(field) ? "true" : "false";
                 break;
             default:
-                params[key] = std::string(field.c_str() ? field.c_str() : "");
+                break;
         }
     }
     return params;

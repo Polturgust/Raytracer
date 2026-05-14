@@ -6,10 +6,6 @@
 */
 
 #include "Threading/Renderer.hpp"
-#include "math/Vector3D.hpp"
-#include <cmath>
-#include <algorithm>
-#include <iostream>
 
 namespace raytracer::threading {
 

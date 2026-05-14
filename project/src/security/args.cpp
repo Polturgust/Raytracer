@@ -6,7 +6,6 @@
 */
 
 #include "args.hpp"
-#include <system_error>
 
 namespace raytracer {
 

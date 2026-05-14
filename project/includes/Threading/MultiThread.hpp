@@ -16,6 +16,7 @@
     #include "IObject.hpp"
     #include "ILight.hpp"
     #include "render/Camera.hpp"
+    #include "Threading/Renderer.hpp"
 
 namespace raytracer {
 

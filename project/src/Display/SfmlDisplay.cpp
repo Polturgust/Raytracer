@@ -1,7 +1,5 @@
 #include "SfmlDisplay.hpp"
 
-#include <stdexcept>
-
 namespace raytracer {
 
 SfmlDisplay::SfmlDisplay(std::size_t width, std::size_t height)

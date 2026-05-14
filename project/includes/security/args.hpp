@@ -10,6 +10,9 @@
     #include <string.h>
     #include <filesystem>
     #include <array>
+    #include <sstream>
+    #include <system_error>
+    #include <exception>
 
     #include "Error.hpp"
     #include "Warning.hpp"

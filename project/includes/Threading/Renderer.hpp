@@ -10,6 +10,8 @@
 #include <vector>
 #include <memory>
 #include <array>
+#include <cmath>
+#include <algorithm>
 
 #include "Object/IObject.hpp"
 #include "LIght/ILight.hpp"

@@ -6,9 +6,6 @@
 */
 
 #include "MultiThread.hpp"
-#include "Threading/Renderer.hpp"
-
-#include <algorithm>
 
 namespace raytracer {
 

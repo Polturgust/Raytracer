@@ -7,12 +7,22 @@
 
 #ifndef IOBJECT_HPP
     #define IOBJECT_HPP
+    #include <array>
+
+    #include "core/Ray.hpp"
+    #include "math/Point3D.hpp"
+    #include "math/Vector3D.hpp"
 
 namespace raytracer {
 
 class IObject {
 public:
-    // geters for maths
+    virtual ~IObject() = default;
+
+    virtual std::array<int, 3> GetColor() const = 0;
+    virtual math::Point3D GetPosition() const = 0;
+    virtual bool Intersect(const core::Ray& ray, double& distance) const = 0;
+    virtual math::Vector3D GetNormal(const math::Point3D& point) const = 0;
 };
 
 }

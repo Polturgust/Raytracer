@@ -18,7 +18,7 @@ class AObject : public IObject {
     std::unique_ptr<ITexture> Texture;
 public:
     AObject(std::unique_ptr<ITexture> Texture): Texture(std::move(Texture)) {};
-    ~AObject() = default;
+    ~AObject() override = default;
 };
 
 }

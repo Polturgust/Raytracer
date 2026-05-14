@@ -9,6 +9,7 @@
     #define SFMLDISPLAY_HPP
     #include <cstddef>
     #include <vector>
+    #include <stdexcept>
     #include <SFML/Graphics.hpp>
 
     #include "Tile.hpp"

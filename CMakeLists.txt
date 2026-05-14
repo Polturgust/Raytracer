@@ -28,7 +28,7 @@ target_include_directories(raytracer
         project/includes/Manager
         project/includes/math
         project/includes/render
-        project/includes/Manager/default
+        project/includes/Manager/Default
         project/includes/Manager/client
         project/includes/Manager/server
         project/includes/security
@@ -63,19 +63,32 @@ target_link_libraries(raytracer
 #   - Optionally, custom includes (will use shared/ headers)
 # Output: raytracer_<plugin_name>.so in the plugins/ directory
 
+# Math sources are already compiled into the main raytracer binary,
+# but plugins need them too. Compile them as part of each plugin.
+file(GLOB_RECURSE MATH_SRCS
+    ${CMAKE_SOURCE_DIR}/project/src/math/*.cpp
+)
+
 file(GLOB PLUGIN_DIRS "${CMAKE_SOURCE_DIR}/plugins/*")
 foreach(PLUGIN_DIR ${PLUGIN_DIRS})
     if(IS_DIRECTORY "${PLUGIN_DIR}")
         get_filename_component(PLUGIN_NAME ${PLUGIN_DIR} NAME)
         file(GLOB_RECURSE PLUGIN_SRCS "${PLUGIN_DIR}/*.cpp")
         if(PLUGIN_SRCS)
-            add_library(raytracer_${PLUGIN_NAME} SHARED ${PLUGIN_SRCS})
+            add_library(raytracer_${PLUGIN_NAME} SHARED ${PLUGIN_SRCS} ${MATH_SRCS})
+            set_target_properties(raytracer_${PLUGIN_NAME} PROPERTIES PREFIX "")
             target_include_directories(raytracer_${PLUGIN_NAME}
                 PUBLIC
                     shared
                     shared/LIght
                     shared/Object
                     shared/Texture
+                    project/includes
+                    project/includes/math
+                    project/includes/core
+                    bootsrap/include
+                    bootsrap/include/Math
+                    bootsrap/include/RayTracer
             )
             target_compile_options(raytracer_${PLUGIN_NAME}
                 PRIVATE

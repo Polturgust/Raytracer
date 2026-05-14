@@ -20,7 +20,7 @@ public:
     ~AManager() = default;
 
     void InitCore(Core& core) {(void)core;};
-    void Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, std::vector<std::vector<Tile>>& map) = 0;
+    void Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map) = 0;
     State GetState(void) {return _state;};
 };
 

@@ -1,7 +1,5 @@
 #include "math/Vector3D.hpp"
 
-#include <stdexcept>
-
 namespace raytracer::math {
 
 Vector3D::Vector3D(double xValue, double yValue, double zValue)

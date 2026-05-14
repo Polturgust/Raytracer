@@ -8,9 +8,10 @@
 #include "Sphere.hpp"
 
 #include <cmath>
-#include <stdexcept>
 #include <iostream>
 #include <map>
+
+#include "Error/Error.hpp"
 
 #include "SoType.hpp"
 
@@ -20,7 +21,7 @@ Sphere::Sphere(const math::Point3D& center, double radius, const std::array<int,
     : AObject(nullptr), _center(center), _radius(radius), _color(color)
 {
     if (radius < 0.0)
-        throw std::runtime_error("Sphere radius cannot be negative");
+        throw Error("Sphere radius cannot be negative");
 }
 
 std::array<int, 3> Sphere::GetColor() const
@@ -100,7 +101,7 @@ IObject* getObject(std::map<std::string, std::string> params)
 
         return new Sphere(math::Point3D(x, y, z), radius, {r, g, b});
     } catch (const std::exception& e) {
-        std::cerr << "Error creating sphere: " << e.what() << std::endl;
+        throw Error(std::string("Error creating sphere: ") + e.what());
         return nullptr;
     }
 }

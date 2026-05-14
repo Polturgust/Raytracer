@@ -96,10 +96,6 @@ foreach(PLUGIN_DIR ${PLUGIN_DIRS})
                     -Wextra
                     -Werror
             )
-            target_link_libraries(raytracer_${PLUGIN_NAME}
-                PRIVATE
-                    dl
-            )
             message(STATUS "Building plugin: raytracer_${PLUGIN_NAME}.so")
         endif()
     endif()

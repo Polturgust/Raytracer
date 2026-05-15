@@ -78,37 +78,44 @@ double CfgReader::GetCameraFieldOfView() {
     return fov;
 }
 
+void CfgReader::TakeOneValue(const libconfig::Setting& cfg, std::map<std::string, std::string>& params, const std::string& prefix) {
+    switch (cfg.getType()) {
+        case libconfig::Setting::TypeString: {
+            const char* strVal = cfg.c_str();
+            std::string strValue = strVal ? strVal : "";
+            params[prefix] = strValue;
+            break;
+        }
+        case libconfig::Setting::TypeInt:
+            params[prefix] = std::to_string(static_cast<int>(cfg));
+            break;
+        case libconfig::Setting::TypeFloat:
+            params[prefix] = std::to_string(static_cast<double>(cfg));
+            break;
+        case libconfig::Setting::TypeBoolean:
+            params[prefix] = static_cast<bool>(cfg) ? "true" : "false";
+            break;
+        default:
+            break;
+    }
+}
+
 std::map<std::string, std::string> CfgReader::settingToParams(const libconfig::Setting& cfg, const std::string& prefix) {
     std::map<std::string, std::string> params;
+    if (!cfg.isGroup() && !cfg.isArray()) {
+        TakeOneValue(cfg, params, prefix);
+        return params;
+    }
     for (int i = 0; i < cfg.getLength(); ++i) {
         const libconfig::Setting& field = cfg[i];
         const char* rawName = field.getName();
         std::string key = rawName ? (prefix.empty() ? std::string(rawName) : prefix + "." + std::string(rawName)) : prefix;
-        
         if (field.isGroup() || field.isArray()) {
             for (auto& kv : settingToParams(field, key))
                 params.emplace(kv.first, kv.second);
             continue;
         }
-        switch (field.getType()) {
-            case libconfig::Setting::TypeString: {
-                const char* strVal = field.c_str();
-                std::string strValue = strVal ? strVal : "";
-                params[key] = strValue;
-                break;
-            }
-            case libconfig::Setting::TypeInt:
-                params[key] = std::to_string(static_cast<int>(field));
-                break;
-            case libconfig::Setting::TypeFloat:
-                params[key] = std::to_string(static_cast<double>(field));
-                break;
-            case libconfig::Setting::TypeBoolean:
-                params[key] = static_cast<bool>(field) ? "true" : "false";
-                break;
-            default:
-                break;
-        }
+        TakeOneValue(field, params, key);
     }
     return params;
 }

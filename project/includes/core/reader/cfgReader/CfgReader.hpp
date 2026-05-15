@@ -12,6 +12,7 @@
 
     #include "AReader.hpp"
     #include "Warning.hpp"
+    #include "printer.hpp"
 
 namespace raytracer {
 
@@ -20,6 +21,7 @@ class CfgReader : public AReader {
 
     const libconfig::Setting& CameraExist();
     std::map<std::string, std::string> settingToParams(const libconfig::Setting& cfg, const std::string& prefix = "");
+    void TakeOneValue(const libconfig::Setting& cfg, std::map<std::string, std::string>& params, const std::string& prefix);
 
     template<typename T>
     std::vector<std::unique_ptr<T>> loadLists(std::string name_list) {
@@ -30,32 +32,29 @@ class CfgReader : public AReader {
         const libconfig::Setting& objects = _cfg.lookup(name_list);
         for (int i = 0; i < objects.getLength(); ++i) {
             const libconfig::Setting& group = objects[i];
-
+            std::string GroupeName = group.getName();
+            std::map<std::string, std::string> param;
             if (group.getLength() > 0 && group[0].isGroup()) {
-                const char* namePtr = group.getName();
-                std::string pluginName = (namePtr != nullptr) ? std::string(namePtr) : "unnamed";
                 for (int j = 0; j < group.getLength(); ++j) {
-                    std::map<std::string, std::string> param = settingToParams(group[j]);
-                    if (param.count("name") && !param.at("name").empty())
-                        pluginName = param.at("name");
+                    param = settingToParams(group[j]);
                     try {
-                        list.push_back(ldloader.load<T>(pluginName, param));
+                        list.push_back(ldloader.load<T>(GroupeName, param));
                     } catch (const IError& e) {
-                        if (e.code() == 0 && std::find(NoOpenFile.begin(), NoOpenFile.end(), pluginName) == NoOpenFile.end())
-                            NoOpenFile.push_back(pluginName);
+                        if (e.code() == 0 && std::find(NoOpenFile.begin(), NoOpenFile.end(), GroupeName) == NoOpenFile.end())
+                            NoOpenFile.push_back(GroupeName);
+                        if (e.code() == 84)
+                            std::cout << Color::RED << "Error " << Color::RESET << e.what() << std::endl;
                     }
                 }
             } else {
-                const char* namePtr = group.getName();
-                std::string pluginName = (namePtr != nullptr) ? std::string(namePtr) : "unnamed";
-                std::map<std::string, std::string> param = settingToParams(group);
-                if (param.count("name") && !param.at("name").empty())
-                    pluginName = param.at("name");
+                param = settingToParams(group);
                 try {
-                    list.push_back(ldloader.load<T>(pluginName, param));
+                    list.push_back(ldloader.load<T>(GroupeName, param));
                 } catch (const IError& e) {
-                    if (e.code() == 0 && std::find(NoOpenFile.begin(), NoOpenFile.end(), pluginName) == NoOpenFile.end())
-                        NoOpenFile.push_back(pluginName);
+                    if (e.code() == 0 && std::find(NoOpenFile.begin(), NoOpenFile.end(), GroupeName) == NoOpenFile.end())
+                        NoOpenFile.push_back(GroupeName);
+                    if (e.code() == 84)
+                        std::cout << Color::RED << "Error " << Color::RESET << e.what() << std::endl;
                 }
             }
         }

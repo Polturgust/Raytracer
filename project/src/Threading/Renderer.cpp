@@ -5,7 +5,7 @@
 ** Renderer.cpp - Graphics/Ray computation implementation
 */
 
-#include "Threading/Renderer.hpp"
+#include "Renderer.hpp"
 
 namespace raytracer::threading {
 

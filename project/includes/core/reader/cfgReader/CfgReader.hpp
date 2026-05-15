@@ -30,16 +30,13 @@ class CfgReader : public AReader {
         const libconfig::Setting& objects = _cfg.lookup(name_list);
         for (int i = 0; i < objects.getLength(); ++i) {
             const libconfig::Setting& group = objects[i];
+            std::string name = group.getName();
             std::map<std::string, std::string> param = settingToParams(group);
-            std::string pluginName = "unnamed";
-            if (param.count("name") && !param.at("name").empty()) {
-                pluginName = param.at("name");
-            }
             try {
-                list.push_back(ldloader.load<T>(pluginName, param));
+                list.push_back(ldloader.load<T>(name, param));
             } catch (const IError& e) {
-                if (e.code() == 0 && std::find(NoOpenFile.begin(), NoOpenFile.end(), pluginName) == NoOpenFile.end())
-                    NoOpenFile.push_back(pluginName);
+                if (e.code() == 0 && std::find(NoOpenFile.begin(), NoOpenFile.end(), name) == NoOpenFile.end())
+                    NoOpenFile.push_back(name);
             }
         }
         return list;

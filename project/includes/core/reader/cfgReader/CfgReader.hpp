@@ -30,13 +30,33 @@ class CfgReader : public AReader {
         const libconfig::Setting& objects = _cfg.lookup(name_list);
         for (int i = 0; i < objects.getLength(); ++i) {
             const libconfig::Setting& group = objects[i];
-            std::string name = group.getName();
-            std::map<std::string, std::string> param = settingToParams(group);
-            try {
-                list.push_back(ldloader.load<T>(name, param));
-            } catch (const IError& e) {
-                if (e.code() == 0 && std::find(NoOpenFile.begin(), NoOpenFile.end(), name) == NoOpenFile.end())
-                    NoOpenFile.push_back(name);
+
+            if (group.getLength() > 0 && group[0].isGroup()) {
+                const char* namePtr = group.getName();
+                std::string pluginName = (namePtr != nullptr) ? std::string(namePtr) : "unnamed";
+                for (int j = 0; j < group.getLength(); ++j) {
+                    std::map<std::string, std::string> param = settingToParams(group[j]);
+                    if (param.count("name") && !param.at("name").empty())
+                        pluginName = param.at("name");
+                    try {
+                        list.push_back(ldloader.load<T>(pluginName, param));
+                    } catch (const IError& e) {
+                        if (e.code() == 0 && std::find(NoOpenFile.begin(), NoOpenFile.end(), pluginName) == NoOpenFile.end())
+                            NoOpenFile.push_back(pluginName);
+                    }
+                }
+            } else {
+                const char* namePtr = group.getName();
+                std::string pluginName = (namePtr != nullptr) ? std::string(namePtr) : "unnamed";
+                std::map<std::string, std::string> param = settingToParams(group);
+                if (param.count("name") && !param.at("name").empty())
+                    pluginName = param.at("name");
+                try {
+                    list.push_back(ldloader.load<T>(pluginName, param));
+                } catch (const IError& e) {
+                    if (e.code() == 0 && std::find(NoOpenFile.begin(), NoOpenFile.end(), pluginName) == NoOpenFile.end())
+                        NoOpenFile.push_back(pluginName);
+                }
             }
         }
         return list;

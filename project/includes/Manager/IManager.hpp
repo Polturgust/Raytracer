@@ -10,7 +10,7 @@
     #include <vector>
 
     #include "Core.hpp"
-    #include "render/Camera.hpp"
+    #include "Camera.hpp"
     #include "Tile.hpp"
     #include "IObject.hpp"
     #include "ILight.hpp"

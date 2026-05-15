@@ -1,4 +1,4 @@
-#include "render/Camera.hpp"
+#include "Camera.hpp"
 
 namespace raytracer::render {
 

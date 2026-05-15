@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <utility>
 
-#include "math/Point3D.hpp"
+#include "Point3D.hpp"
 
 namespace raytracer::render {
 

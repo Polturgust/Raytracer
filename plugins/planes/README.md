@@ -26,7 +26,6 @@ All parameters are provided as a `std::map<std::string, std::string>` from the c
 ```libconfig
 plane = (
     {
-        name = "plane";
         position = { x = 0; y = -3; z = 0; };
         normal = { x = 0; y = 1; z = 0; };
         color = { r = 128; g = 128; b = 128; };

@@ -21,7 +21,7 @@
     #include "IReader.hpp"
     #include "IObject.hpp"
     #include "ILight.hpp"
-    #include "render/Camera.hpp"
+    #include "Camera.hpp"
     #include "ppm.hpp"
     #include "SfmlDisplay.hpp"
 

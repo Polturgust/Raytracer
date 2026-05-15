@@ -29,7 +29,6 @@ All parameters are provided as a `std::map<std::string, std::string>` from the c
 ```libconfig
 triangle = (
     {
-        name = "triangle";
         v0 = { x = 0; y = 0; z = 5; };
         v1 = { x = 2; y = 0; z = 5; };
         v2 = { x = 1; y = 2; z = 5; };

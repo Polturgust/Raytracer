@@ -24,7 +24,6 @@ All parameters are provided as a `std::map<std::string, std::string>` from the c
 ```libconfig
 sphere = (
     {
-        name = "sphere";
         position = { x = 0; y = 0; z = 5; };
         radius = 2.5;
         color = { r = 255; g = 0; b = 0; };

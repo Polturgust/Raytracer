@@ -9,9 +9,9 @@
     #define IOBJECT_HPP
     #include <array>
 
-    #include "core/Ray.hpp"
-    #include "math/Point3D.hpp"
-    #include "math/Vector3D.hpp"
+    #include "Ray.hpp"
+    #include "Point3D.hpp"
+    #include "Vector3D.hpp"
 
 namespace raytracer {
 

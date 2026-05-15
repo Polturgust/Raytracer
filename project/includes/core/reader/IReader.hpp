@@ -29,6 +29,9 @@ namespace raytracer {
         virtual std::array<int, 3> GetCameraRotation() = 0;
         virtual double GetCameraFieldOfView() = 0;
 
+        virtual double GetAmbientLight() = 0;
+        virtual double GetDiffuseLight() = 0;
+
         virtual std::vector<std::unique_ptr<IObject>> GetObjects() = 0;
         virtual std::vector<std::unique_ptr<ILight>> GetLights() = 0;
 

@@ -68,20 +68,87 @@ math::Vector3D Mesh::GetRotation() const {
 }
 
 bool Mesh::Intersect(const core::Ray& ray, double& distance) const {
-    double closestDistance = std::numeric_limits<double>::max();
-    bool hit = false;
-    for (const auto& triangle : _triangles) {
-        double t;
-        math::Vector3D normal;
-        if (triangle.intersect(ray, t, normal)) {
-            if (t < closestDistance) {
-                closestDistance = t;
-                distance = t;
-                hit = true;
+    if (_bvhNodes.empty()) {
+        double closestDistance = std::numeric_limits<double>::max();
+        bool hit = false;
+        for (const auto& triangle : _triangles) {
+            double t;
+            math::Vector3D normal;
+            if (triangle.intersect(ray, t, normal)) {
+                if (t < closestDistance) {
+                    closestDistance = t;
+                    distance = t;
+                    hit = true;
+                }
+            }
+        }
+        return hit;
+    }
+
+    double closest = std::numeric_limits<double>::max();
+    bool hitAny = false;
+    std::vector<int> stack;
+    stack.reserve(64);
+    stack.push_back(0);
+
+    auto rayIntersectsAABBWithT = [&](const AABB& b, double& outTmin)->bool {
+        double tmin = -std::numeric_limits<double>::infinity();
+        double tmax = std::numeric_limits<double>::infinity();
+        auto check = [&](double origin, double dir, double minB, double maxB)->bool {
+            if (std::abs(dir) < 1e-12) {
+                if (origin < minB || origin > maxB) return false;
+                return true;
+            }
+            double inv = 1.0 / dir;
+            double t1 = (minB - origin) * inv;
+            double t2 = (maxB - origin) * inv;
+            if (t1 > t2) std::swap(t1, t2);
+            if (t1 > tmin) tmin = t1;
+            if (t2 < tmax) tmax = t2;
+            return tmin <= tmax;
+        };
+        if (!check(ray.origin.x, ray.direction.x, b.min.x, b.max.x)) return false;
+        if (!check(ray.origin.y, ray.direction.y, b.min.y, b.max.y)) return false;
+        if (!check(ray.origin.z, ray.direction.z, b.min.z, b.max.z)) return false;
+        outTmin = tmin;
+        return true;
+    };
+
+    while (!stack.empty()) {
+        int nodeIdx = stack.back(); stack.pop_back();
+        const BVHNode& node = _bvhNodes[nodeIdx];
+        double nodeTmin = 0.0;
+        if (!rayIntersectsAABBWithT(node.bounds, nodeTmin)) continue;
+        if (nodeTmin > closest) continue;
+        if (node.count > 0) {
+            for (int i = 0; i < node.count; ++i) {
+                int triIdx = _triIndices[node.start + i];
+                const Triangle& tri = _triangles[triIdx];
+                double t;
+                math::Vector3D normal;
+                if (tri.intersect(ray, t, normal)) {
+                    if (t < closest) {
+                        closest = t;
+                        distance = t;
+                        hitAny = true;
+                    }
+                }
+            }
+        } else {
+            double tL = std::numeric_limits<double>::infinity();
+            double tR = std::numeric_limits<double>::infinity();
+            if (node.left != -1) rayIntersectsAABBWithT(_bvhNodes[node.left].bounds, tL);
+            if (node.right != -1) rayIntersectsAABBWithT(_bvhNodes[node.right].bounds, tR);
+            if (tL < tR) {
+                if (node.right != -1 && tR <= closest) stack.push_back(node.right);
+                if (node.left != -1 && tL <= closest) stack.push_back(node.left);
+            } else {
+                if (node.left != -1 && tL <= closest) stack.push_back(node.left);
+                if (node.right != -1 && tR <= closest) stack.push_back(node.right);
             }
         }
     }
-    return hit;
+    return hitAny;
 }
 
 math::Vector3D Mesh::GetNormal(const math::Point3D& point) const {
@@ -139,6 +206,58 @@ std::vector<math::Point3D> parseOBJFile(const std::string& filepath) {
     }
     file.close();
     return vertices;
+}
+
+static math::Point3D triangleCentroid(const Triangle& t) {
+    return math::Point3D((t.v0.x + t.v1.x + t.v2.x) / 3.0,
+                         (t.v0.y + t.v1.y + t.v2.y) / 3.0,
+                         (t.v0.z + t.v1.z + t.v2.z) / 3.0);
+}
+
+void Mesh::buildBVH() {
+    _triIndices.resize(_triangles.size());
+    for (size_t i = 0; i < _triIndices.size(); ++i) _triIndices[i] = static_cast<int>(i);
+    _bvhNodes.clear();
+    if (_triIndices.empty()) return;
+    buildBVHNode(0, static_cast<int>(_triIndices.size()));
+}
+
+int Mesh::buildBVHNode(int start, int end) {
+    BVHNode node;
+    node.start = start;
+    node.count = end - start;
+    for (int i = start; i < end; ++i) {
+        const Triangle& t = _triangles[_triIndices[i]];
+        node.bounds.expand(t.v0);
+        node.bounds.expand(t.v1);
+        node.bounds.expand(t.v2);
+    }
+    int myIndex = static_cast<int>(_bvhNodes.size());
+    _bvhNodes.push_back(node); // placeholder
+
+    if (node.count <= 4) {
+        _bvhNodes[myIndex] = node;
+        return myIndex;
+    }
+
+    int axis = node.bounds.longestAxis();
+    std::sort(_triIndices.begin() + start, _triIndices.begin() + end, [&](int a, int b){
+        math::Point3D ca = triangleCentroid(_triangles[a]);
+        math::Point3D cb = triangleCentroid(_triangles[b]);
+        if (axis == 0) return ca.x < cb.x;
+        if (axis == 1) return ca.y < cb.y;
+        return ca.z < cb.z;
+    });
+    int mid = (start + end) / 2;
+    int left = buildBVHNode(start, mid);
+    int right = buildBVHNode(mid, end);
+    _bvhNodes[myIndex].left = left;
+    _bvhNodes[myIndex].right = right;
+    _bvhNodes[myIndex].count = 0;
+    _bvhNodes[myIndex].start = 0;
+    _bvhNodes[myIndex].bounds = _bvhNodes[left].bounds;
+    _bvhNodes[myIndex].bounds.expand(_bvhNodes[right].bounds);
+    return myIndex;
 }
 
 } // namespace raytracer::plugins
@@ -254,6 +373,8 @@ IObject* getObject(std::map<std::string, std::string> params) {
             }
         }
         file.close();
+        // build BVH for faster intersection
+        mesh->buildBVH();
         return mesh;
     } catch (const std::exception& e) {
         throw Error(std::string("Error creating mesh: ") + e.what());

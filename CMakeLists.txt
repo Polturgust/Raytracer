@@ -6,7 +6,10 @@ project(raytracer CXX)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBCONFIG REQUIRED libconfig++)
-pkg_check_modules(SFML REQUIRED sfml-graphics sfml-window sfml-system)
+pkg_check_modules(SFML QUIET sfml-graphics sfml-window sfml-system)
+if(NOT SFML_FOUND)
+    find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
+endif()
 
 file(GLOB_RECURSE PROJECT_SRCS
     ${CMAKE_SOURCE_DIR}/project/src/*.cpp

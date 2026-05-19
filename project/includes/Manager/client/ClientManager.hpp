@@ -15,6 +15,7 @@
     #include "AManager.hpp"
     #include "Net.hpp"
     #include "Error.hpp"
+    #include "Warning.hpp"
     #include "printer.hpp"
 
 namespace raytracer {

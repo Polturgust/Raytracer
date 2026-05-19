@@ -60,7 +60,7 @@ void ClientManager::DoPoll() {
             message = _socket.Receive();
         } catch (...) {}
         if (message.empty())
-            throw Error("Client: connection closed by server.");
+            throw Warning("Client: connection closed by server.");
         _incoming.push(message);
         std::cout << Color::BLUE << "Reveive : " << Color::RESET << message;
         std::cout.flush();

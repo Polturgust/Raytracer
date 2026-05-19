@@ -32,17 +32,17 @@ public:
         if (!handle)
             throw Warning("No file match in plugin with name : " + realpath);
         dlerror();
-        auto getSoType = reinterpret_cast<SoTypeEnum (*) ()> (dlsym(handle, "getSOType"));
         const char* err = dlerror();
+        /*auto getSoType = reinterpret_cast<SoTypeEnum (*) ()> (dlsym(handle, "getSOType"));
         if (err) {
             dlclose(handle);
             throw Error("So type not found");
         }
-        SoTypeEnum type = getSoType();
+        SoTypeEnum type = getSoType();*/
         T* (*getObject)(std::map<std::string, std::string>) = reinterpret_cast<T* (*)(std::map<std::string, std::string>)> (dlsym(handle, "getObject"));
         if (err) {
             dlclose(handle);
-            throw Error("getObject type not works");
+            throw Error("libld : getObject not found.");
         }
         return std::unique_ptr<T> (getObject(param));
     }

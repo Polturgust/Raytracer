@@ -22,6 +22,11 @@ void Core::Init() {
         std::pair<size_t, size_t> size = _reader->GetCameraResolution();
         _x = size.first;
         _y = size.second;
+        _camera = render::Camera(
+            _reader->GetCameraPosition(),
+            _reader->GetCameraRotation(),
+            size,
+            _reader->GetCameraFieldOfView());
     }
     map.resize(_y);
     for (auto& row : map)
@@ -44,7 +49,7 @@ void Core::Run() {
     while (_manager->GetState() != FINISH && sfml->isOpen()) {
         if (!sfml->pollEvents())
             break;
-        _manager->Update(Objects, Lights, map);
+        _manager->Update(Objects, Lights, _camera, map);
         sfml->render(map);
     }
     if (!_sceneFile.empty())

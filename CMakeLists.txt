@@ -6,7 +6,10 @@ project(raytracer CXX)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBCONFIG REQUIRED libconfig++)
-pkg_check_modules(SFML REQUIRED sfml-graphics sfml-window sfml-system)
+pkg_check_modules(SFML QUIET sfml-graphics sfml-window sfml-system)
+if(NOT SFML_FOUND)
+    find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
+endif()
 
 file(GLOB_RECURSE PROJECT_SRCS
     ${CMAKE_SOURCE_DIR}/project/src/*.cpp
@@ -40,13 +43,15 @@ target_include_directories(raytracer
         shared/LIght
         shared/Object
         shared/Texture
+        shared/math
+        shared/Error
 )
 
 target_compile_options(raytracer
     PRIVATE
         -Wall
         -Wextra
-    -Werror
+        -Werror
 )
 
 target_link_libraries(raytracer
@@ -64,6 +69,7 @@ target_link_libraries(raytracer
 #   - Optionally, custom includes (will use shared/ headers)
 # Output: raytracer_<plugin_name>.so in the plugins/ directory
 
+
 file(GLOB PLUGIN_DIRS "${CMAKE_SOURCE_DIR}/plugins/*")
 foreach(PLUGIN_DIR ${PLUGIN_DIRS})
     if(IS_DIRECTORY "${PLUGIN_DIR}")
@@ -78,6 +84,8 @@ foreach(PLUGIN_DIR ${PLUGIN_DIRS})
                     shared/LIght
                     shared/Object
                     shared/Texture
+                    shared/math
+                    shared/Error
             )
             target_compile_options(raytracer_${PLUGIN_NAME}
                 PRIVATE

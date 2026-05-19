@@ -14,10 +14,10 @@ int main(int argc, char **argv) {
         arg.Test();
     } catch (const IError& e) {
         if (e.code() == 84) {
-            std::cerr << raytracer::Color::RED << "Error" << raytracer::Color::RESET << "Raytracer : " << e.what();
+            std::cerr << raytracer::Color::RED << "Error : " << raytracer::Color::RESET << "Raytracer : " << e.what();
             return 84;
         }
-        std::cout << raytracer::Color::YELLOW << "Warrning" << raytracer::Color::RESET << e.what();
+        std::cout << e.what();
         return 0;
     }
     raytracer::CoreBuilder builder;
@@ -32,10 +32,10 @@ int main(int argc, char **argv) {
         core.Run();
     } catch (const IError& e) {
         if (e.code() == 84) {
-            std::cerr << raytracer::Color::RED << "Error" << raytracer::Color::RESET << "Raytracer : " << e.what();
+            std::cerr << raytracer::Color::RED << "Error : " << raytracer::Color::RESET << "Raytracer : " << e.what();
             return 84;
         }
-        std::cout << raytracer::Color::YELLOW << "Warrning" << raytracer::Color::RESET << e.what();
+        std::cout << raytracer::Color::YELLOW << "Warrning : " << raytracer::Color::RESET << e.what();
         return 0;
     }
 

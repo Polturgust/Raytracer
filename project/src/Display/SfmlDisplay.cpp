@@ -1,6 +1,11 @@
-#include "SfmlDisplay.hpp"
+/*
+** EPITECH PROJECT, 2025
+** G-OOP-400-NCE-4-1-raytracer-8
+** File description:
+** SfmlDisplay.cpp
+*/
 
-#include <stdexcept>
+#include "SfmlDisplay.hpp"
 
 namespace raytracer {
 

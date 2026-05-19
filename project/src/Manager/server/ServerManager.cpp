@@ -9,10 +9,11 @@
 
 namespace raytracer {
 
-void ServerManager::Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, std::vector<std::vector<Tile>>& map) {
+void ServerManager::Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map) {
     (void)map;
     (void)objects;
     (void)lights;
+    (void)camera;
     try {
         paul.paul(clients);
     } catch (const IError& e) {

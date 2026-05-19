@@ -21,6 +21,7 @@
     #include "IReader.hpp"
     #include "IObject.hpp"
     #include "ILight.hpp"
+    #include "Camera.hpp"
     #include "ppm.hpp"
     #include "SfmlDisplay.hpp"
 
@@ -39,6 +40,7 @@ class Core {
 
     ToPpm ppmconvertor;
     std::optional<SfmlDisplay> sfml;
+    render::Camera _camera;
 
     std::vector<std::unique_ptr<IObject>> Objects;
     std::vector<std::unique_ptr<ILight>> Lights;

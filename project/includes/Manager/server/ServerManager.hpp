@@ -12,6 +12,7 @@
     #include <string>
     #include <vector>
     #include <iostream>
+    #include <fstream>
 
     #include "AManager.hpp"
     #include "Net.hpp"
@@ -25,9 +26,10 @@ struct Client {
     std::string cmd = "";
     bool doWrite = false;
     bool doRead = false;
+    std::size_t Uid;
     std::vector<std::string> MsgQueu;
 
-    explicit Client(TcpSocket sock): socket(std::move(sock)) {};
+    explicit Client(TcpSocket sock, std::size_t uid): socket(std::move(sock)), Uid(uid) {};
 };
 
 class ServerManager : public AManager {
@@ -40,8 +42,9 @@ class ServerManager : public AManager {
     void HandleCommand(Client& cl, const std::string& line);
     void HandleFGet(Client& cl, std::istringstream& iss);
     void Reply(Client& cl, const std::string& message);
-
     void DoPoll();
+
+    std::size_t GetUid(void);
 public:
     ServerManager(int port, std::string configFile): _configFile(configFile) {
         _listen.Listen(static_cast<std::uint16_t>(port));

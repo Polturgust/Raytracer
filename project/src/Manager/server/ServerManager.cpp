@@ -7,8 +7,6 @@
 
 #include "ServerManager.hpp"
 
-#include <fstream>
-
 namespace raytracer {
 
 static bool IsValidPluginPath(const std::string& p) {
@@ -87,6 +85,7 @@ void ServerManager::HandleCommand(Client& cl, const std::string& line) {
     std::istringstream iss(line);
     std::string cmd;
     iss >> cmd;
+    std::cout << Color::BLUE << "Receive " << Color::RESET << "from client " << cl.Uid << " :\n\t" << line;
     if (cmd == "FGET") {
         HandleFGet(cl, iss);
         return;
@@ -132,11 +131,24 @@ void ServerManager::DoPoll() {
 
     if (_poller.Revents(0) & POLLIN) {
         try {
-            _clients.emplace_back(_listen.Accept());
+            _clients.emplace_back(_listen.Accept(), GetUid());
         } catch (const IError& e) {
             std::cerr << "ServerManager: " << e.what();
         }
     }
+}
+
+std::size_t ServerManager::GetUid() {
+    std::vector<std::size_t> uidTab;
+
+    for (std::size_t i = 1; i <= _clients.size() + 1; i++)
+        uidTab.push_back(i);
+    for (std::size_t i = 0; i < _clients.size(); i++)
+        uidTab[_clients[i].Uid - 1] = 0;
+    for (std::size_t i = 0; i < uidTab.size(); i++)
+        if (uidTab[i] != 0)
+            return uidTab[i];
+    return _clients.size() + 1;
 }
 
 void ServerManager::Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map) {

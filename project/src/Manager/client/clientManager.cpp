@@ -119,10 +119,10 @@ void ClientManager::ProcessActiveStates(Core& core) {
                     _stage = INITCORE;
                     break;
                 }
-                const std::string& name = _pluginsToFetch[_pluginIndex];
+                const std::string& path = _pluginsToFetch[_pluginIndex];
                 _receiver = std::make_unique<FileReceiver>();
                 std::ostringstream oss;
-                oss << "FGET plugins/raytracer_" << name << ".so " << _socket.LocalIp() << " " << _receiver->Port();
+                oss << "FGET " << path << " " << _socket.LocalIp() << " " << _receiver->Port();
                 SendMsg(oss.str());
                 Advance();
                 break;
@@ -179,17 +179,17 @@ void ClientManager::ProcessWaitingStates(Core& core) {
                     _stage = INITCORE;
                     break;
                 }
-                const std::string& name = _pluginsToFetch[_pluginIndex];
+                const std::string& path = _pluginsToFetch[_pluginIndex];
                 if (line.rfind("200", 0) == 0) {
                     if (!_receiver)
-                        std::cerr << "Client: no FileReceiver pending for plugin " << name << ".\n";
+                        std::cerr << "Client: no FileReceiver pending for plugin " << path << ".\n";
                     else {
                         try {
-                            _receiver->Receive("plugins/raytracer_" + name + ".so");
+                            _receiver->Receive(path);
                         } catch (...) {}
                     }
                 } else
-                    std::cerr << "Client: plugin " << name << " unavailable (" << line << ").\n";
+                    std::cerr << "Client: plugin " << path << " unavailable (" << line << ").\n";
                 _receiver.reset();
                 _pluginIndex++;
                 if (_pluginIndex < _pluginsToFetch.size())

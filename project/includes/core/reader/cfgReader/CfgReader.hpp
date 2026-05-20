@@ -44,10 +44,10 @@ class CfgReader : public AReader {
                     try {
                         list.push_back(ldloader.load<T>(GroupeName, param));
                     } catch (const IError& e) {
-                        if (e.code() == 0 && std::find(NoOpenFile.begin(), NoOpenFile.end(), GroupeName) == NoOpenFile.end()) {
+                        if (e.code() == 2 && std::find(NoOpenFile.begin(), NoOpenFile.end(), GroupeName) == NoOpenFile.end()) {
                             std::cout << e;
-                            NoOpenFile.push_back(GroupeName);
-                        } if (e.code() == 84)
+                            NoOpenFile.push_back("plugins/raytracer_" + GroupeName + ".so");
+                        } else
                             std::cout << e;
                     }
                 }
@@ -58,8 +58,8 @@ class CfgReader : public AReader {
                 } catch (const IError& e) {
                     if (e.code() == 0 && std::find(NoOpenFile.begin(), NoOpenFile.end(), GroupeName) == NoOpenFile.end()) {
                         std::cout << e;
-                        NoOpenFile.push_back(GroupeName);
-                    } if (e.code() == 84)
+                        NoOpenFile.push_back("plugins/raytracer_" + GroupeName + ".so");
+                    } else
                         std::cout << e;
                 }
             }

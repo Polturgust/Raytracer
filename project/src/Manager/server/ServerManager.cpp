@@ -11,24 +11,6 @@
 
 namespace raytracer {
 
-static bool IsValidPluginPath(const std::string& p) {
-    const std::string prefix = "plugins/raytracer_";
-    const std::string suffix = ".so";
-
-    if (p.find("..") != std::string::npos)
-        return false;
-    if (p.size() <= prefix.size() + suffix.size())
-        return false;
-    if (p.compare(0, prefix.size(), prefix) != 0)
-        return false;
-    if (p.compare(p.size() - suffix.size(), suffix.size(), suffix) != 0)
-        return false;
-    const std::string middle = p.substr(prefix.size(), p.size() - prefix.size() - suffix.size());
-    if (middle.empty() || middle.find('/') != std::string::npos)
-        return false;
-    return true;
-}
-
 void ServerManager::Reply(Client& cl, const std::string& message) {
     _logger.LogSend(message, cl.Uid);
     cl.MsgQueu.push_back(message);
@@ -43,21 +25,16 @@ void ServerManager::HandleFGet(Client& cl, std::istringstream& iss) {
         return;
     }
 
-    std::string resolved;
+    std::string realpath;
     std::string okFilename;
     if (path == "ConfigueFile") {
-        resolved = _configFile;
+        realpath = _configFile;
         const auto slash = _configFile.find_last_of('/');
         okFilename = (slash == std::string::npos) ? _configFile : _configFile.substr(slash + 1);
-    } else if (IsValidPluginPath(path)) {
-        resolved = path;
-    } else {
-        Reply(cl, "404 NOT FOUND");
-        return;
-    }
-
+    } else
+        realpath = path;
     {
-        std::ifstream test(resolved, std::ios::binary);
+        std::ifstream test(realpath, std::ios::binary);
         if (!test.is_open()) {
             Reply(cl, "404 NOT FOUND");
             return;
@@ -72,7 +49,7 @@ void ServerManager::HandleFGet(Client& cl, std::istringstream& iss) {
         return;
     }
     try {
-        FileSender::Stream(data, resolved);
+        FileSender::Stream(data, realpath);
     } catch (const IError&) {
         Reply(cl, "500 ERROR");
         return;

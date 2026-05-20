@@ -12,6 +12,7 @@
 #include <iostream>
 #include <algorithm>
 #include "Error.hpp"
+#include "FileNotFound.hpp"
 #include "SoType.hpp"
 
 namespace raytracer::plugins {
@@ -167,7 +168,7 @@ math::Vector3D Mesh::GetNormal(const math::Point3D& point) const {
 std::vector<math::Point3D> parseOBJFile(const std::string& filepath) {
     std::ifstream file(filepath);
     if (!file.is_open())
-        throw Error("Mesh: cannot open OBJ file '" + filepath + "'");
+        throw FileNotFound(filepath);
     std::vector<math::Point3D> vertices;
     std::string line;
     while (std::getline(file, line)) {
@@ -307,7 +308,7 @@ IObject* getObject(std::map<std::string, std::string> params) {
 
         std::ifstream file(filepath);
         if (!file.is_open())
-            throw Error("Mesh: cannot open OBJ file '" + filepath + "'");
+            throw FileNotFound(filepath);
         std::vector<math::Point3D> vertices;
         std::string line;
         while (std::getline(file, line)) {
@@ -370,6 +371,8 @@ IObject* getObject(std::map<std::string, std::string> params) {
         file.close();
         mesh->buildBVH();
         return mesh;
+    } catch (const IError&) {
+        throw;
     } catch (const std::exception& e) {
         throw Error(std::string("Error creating mesh: ") + e.what());
         return nullptr;

@@ -45,6 +45,7 @@ target_include_directories(raytracer
         shared/Texture
         shared/math
         shared/Error
+        shared/printer
 )
 
 target_compile_options(raytracer
@@ -86,6 +87,7 @@ foreach(PLUGIN_DIR ${PLUGIN_DIRS})
                     shared/Texture
                     shared/math
                     shared/Error
+                    shared/printer
             )
             target_compile_options(raytracer_${PLUGIN_NAME}
                 PRIVATE

@@ -31,7 +31,7 @@ void DefaultManager::Update(const std::vector<std::unique_ptr<IObject>>& objects
         _Printer.ClearNbLine(1);
         _Printer.PrintLine(std::to_string((CalculingRow * 100) / map.size()) + "% Calculated.");
     }
-    if (CalculingRow == map.size()) {
+    if (CalculingRow >= map.size() - 1) {
         _state = FINISH;
         return;
     }

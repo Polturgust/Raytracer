@@ -82,18 +82,9 @@ std::array<int, 3> Renderer::ComputeShading(
     const core::Ray& ray)
 {
     (void)ray; // Unused for basic diffuse shading
+    (void)hitPoint;
 
-    const math::Vector3D normal = hitObject->GetNormal(hitPoint).normalized();
-    const math::Vector3D lightDirection = math::Vector3D(-0.4, -1.0, -0.6).normalized() * -1.0;
-    const double diffuse = std::max(0.0, normal.dot(lightDirection));
-    const double intensity = std::clamp(0.15 + 0.85 * diffuse, 0.0, 1.0);
-    const std::array<int, 3> base = hitObject->GetColor();
-
-    return {
-        static_cast<int>(std::clamp(static_cast<double>(base[0]) * intensity, 0.0, 255.0)),
-        static_cast<int>(std::clamp(static_cast<double>(base[1]) * intensity, 0.0, 255.0)),
-        static_cast<int>(std::clamp(static_cast<double>(base[2]) * intensity, 0.0, 255.0))
-    };
+    return hitObject->GetColor();
 }
 
 void Renderer::ComputePixel(

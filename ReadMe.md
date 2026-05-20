@@ -62,16 +62,11 @@ extern "C" SoTypeEnum GetSoType(void) {
 }
 ```
 
-2. `GetObject()` ou `GetLight()` — constructeur exposé qui prend une `std::map<std::string, std::string>` :
+2. `GetObject()` — constructeur exposé qui prend une `std::map<std::string, std::string>` :
 
 ```cpp
 extern "C" IObject* GetObject(std::map<std::string, std::string> params) {
     return new MonObjet(params);
-}
-
-// ou pour une lumière :
-extern "C" ILight* GetLight(std::map<std::string, std::string> params) {
-    return new MaLumiere(params);
 }
 ```
 

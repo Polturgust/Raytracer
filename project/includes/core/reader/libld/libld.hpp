@@ -29,32 +29,20 @@ public:
     std::unique_ptr <T> load(std::string path, std::map<std::string, std::string> param) {
         std::string realpath("plugins/raytracer_" + path + ".so");
         void *handle = dlopen(realpath.c_str(), RTLD_LAZY);
-        if (!handle) {
-            std::cerr << "dlopen: " << dlerror() << "\n";
-            throw Warning("No file match in plugin with name : raytracer_" + path + ".so.\n");
-        }
+        if (!handle)
+            throw Warning("No file match in plugin with name : " + realpath);
         dlerror();
-        auto getSoType = reinterpret_cast<SoTypeEnum (*) ()> (dlsym(handle, "getSOType"));
         const char* err = dlerror();
+        /*auto getSoType = reinterpret_cast<SoTypeEnum (*) ()> (dlsym(handle, "getSOType"));
         if (err) {
             dlclose(handle);
             throw Error("So type not found");
         }
-        SoTypeEnum type = getSoType();
-        T* (*getObject)(std::map<std::string, std::string>) = nullptr;
-        switch (type) {
-            case OBJECT:
-                getObject = reinterpret_cast<T* (*)(std::map<std::string, std::string>)> (dlsym(handle, "getObject")); break;
-            case LIGHT:
-                getObject = reinterpret_cast<T* (*)(std::map<std::string, std::string>)> (dlsym(handle, "getLight")); break;
-            case Texture:
-                getObject = reinterpret_cast<T* (*)(std::map<std::string, std::string>)> (dlsym(handle, "getTexture")); break;
-            default:
-                break;
-        }
+        SoTypeEnum type = getSoType();*/
+        T* (*getObject)(std::map<std::string, std::string>) = reinterpret_cast<T* (*)(std::map<std::string, std::string>)> (dlsym(handle, "getObject"));
         if (err) {
             dlclose(handle);
-            throw Error("getObject type not works");
+            throw Error("libld : getObject not found.");
         }
         return std::unique_ptr<T> (getObject(param));
     }

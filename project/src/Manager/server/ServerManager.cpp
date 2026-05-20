@@ -28,6 +28,7 @@ static bool IsValidPluginPath(const std::string& p) {
 }
 
 void ServerManager::Reply(Client& cl, const std::string& message) {
+    _logger.LogSend(message, cl.Uid);
     cl.MsgQueu.push_back(message);
     cl.doWrite = true;
 }
@@ -85,7 +86,7 @@ void ServerManager::HandleCommand(Client& cl, const std::string& line) {
     std::istringstream iss(line);
     std::string cmd;
     iss >> cmd;
-    std::cout << Color::BLUE << "Receive " << Color::RESET << "from client " << cl.Uid << " :\n\t" << line;
+    _logger.LogReceive(line, cl.Uid);
     if (cmd == "FGET") {
         HandleFGet(cl, iss);
         return;
@@ -99,7 +100,7 @@ void ServerManager::DoPoll() {
     for (const auto& c : _clients)
         _poller.Watch(c.socket.Fd(), static_cast<short>(c.doWrite ? (POLLIN | POLLOUT) : POLLIN));
 
-    if (_poller.Wait(-1) < 0)
+    if (_poller.Wait(0) < 0)
         throw Error("ServerManager: poll failed.");
 
     std::vector<std::size_t> toRemove;
@@ -126,12 +127,16 @@ void ServerManager::DoPoll() {
             }
         }
     }
-    for (auto it = toRemove.rbegin(); it != toRemove.rend(); ++it)
+    for (auto it = toRemove.rbegin(); it != toRemove.rend(); ++it) {
+        _logger.LogReceive("Disconnected.", _clients[*it].Uid);
         _clients.erase(_clients.begin() + static_cast<std::ptrdiff_t>(*it));
+    }
 
     if (_poller.Revents(0) & POLLIN) {
         try {
-            _clients.emplace_back(_listen.Accept(), GetUid());
+            Client cl(_listen.Accept(), GetUid());
+            _logger.LogReceive("New conexion." , cl.Uid);
+            _clients.emplace_back(std::move(cl));
         } catch (const IError& e) {
             std::cerr << "ServerManager: " << e.what();
         }
@@ -156,6 +161,8 @@ void ServerManager::Update(const std::vector<std::unique_ptr<IObject>>& objects,
     (void)objects;
     (void)lights;
     (void)camera;
+
+    DoPoll();
 
     for (auto& cl : _clients) {
         if (cl.doRead) {

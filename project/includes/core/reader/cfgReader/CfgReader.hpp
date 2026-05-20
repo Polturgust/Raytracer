@@ -39,14 +39,34 @@ class CfgReader : public AReader {
                     throw Warning("Reader: missing plugin type in scene file.\n");
             }
 
-            std::map<std::string, std::string> param = settingToParams(group);
-            try {
-                list.push_back(ldloader.load<T>(groupName, param));
-            } catch (const IError& e) {
-                if (e.code() == 0 && std::find(NoOpenFile.begin(), NoOpenFile.end(), groupName) == NoOpenFile.end())
-                    NoOpenFile.push_back(groupName);
-                if (e.code() == 84)
-                    std::cout << Color::RED << "Error " << Color::RESET << e.what() << std::endl;
+            if (group.getLength() > 0 && group[0].isGroup()) {
+                for (int j = 0; j < group.getLength(); ++j) {
+                    std::map<std::string, std::string> param = settingToParams(group[j]);
+                    std::string pluginName = groupName;
+                    if (param.count("name") && !param.at("name").empty())
+                        pluginName = param.at("name");
+                    try {
+                        list.push_back(ldloader.load<T>(pluginName, param));
+                    } catch (const IError& e) {
+                        if (e.code() == 0 && std::find(NoOpenFile.begin(), NoOpenFile.end(), pluginName) == NoOpenFile.end())
+                            NoOpenFile.push_back(pluginName);
+                        if (e.code() == 84)
+                            std::cout << Color::RED << "Error " << Color::RESET << e.what() << std::endl;
+                    }
+                }
+            } else {
+                std::map<std::string, std::string> param = settingToParams(group);
+                std::string pluginName = groupName;
+                if (param.count("name") && !param.at("name").empty())
+                    pluginName = param.at("name");
+                try {
+                    list.push_back(ldloader.load<T>(pluginName, param));
+                } catch (const IError& e) {
+                    if (e.code() == 0 && std::find(NoOpenFile.begin(), NoOpenFile.end(), pluginName) == NoOpenFile.end())
+                        NoOpenFile.push_back(pluginName);
+                    if (e.code() == 84)
+                        std::cout << Color::RED << "Error " << Color::RESET << e.what() << std::endl;
+                }
             }
         }
         return list;

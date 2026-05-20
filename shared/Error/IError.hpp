@@ -21,6 +21,8 @@ public:
 inline std::ostream& operator<<(std::ostream& input, const IError& e) {
     if (e.code() == 84)
         input << raytracer::Color::RED << "Error : " << raytracer::Color::RESET;
+    else if (e.code() == 2)
+        input << raytracer::Color::MAGENTA << "File not Found : " << raytracer::Color::RESET;
     else
         input << raytracer::Color::YELLOW << "Warning : " << raytracer::Color::RESET;
     return input << e.what() << std::endl;

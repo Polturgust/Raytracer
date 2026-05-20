@@ -32,6 +32,10 @@ class CfgReader : public AReader {
         const libconfig::Setting& objects = _cfg.lookup(name_list);
         for (int i = 0; i < objects.getLength(); ++i) {
             const libconfig::Setting& group = objects[i];
+            if (!group.getName()) {
+                std::cerr << "membre without name" << std::endl;
+                continue;
+            }
             std::string GroupeName = group.getName();
             std::map<std::string, std::string> param;
             if (group.getLength() > 0 && group[0].isGroup()) {

@@ -14,6 +14,7 @@
     #include "Core.hpp"
     #include "args.hpp"
     #include "CfgReader.hpp"
+    #include "ObjReader.hpp"
     #include "IManager.hpp"
     #include "DefaultManager.hpp"
     #include "ServerManager.hpp"

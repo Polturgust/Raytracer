@@ -68,19 +68,30 @@ const IObject* Renderer::FindClosestIntersection(
     return hitObject;
 }
 
+bool Renderer::IsInShadow(
+    const std::vector<std::unique_ptr<IObject>>& objects,
+    const math::Point3D& shadowOrigin,
+    const math::Vector3D& lightDir)
+{
+    const core::Ray shadowRay(shadowOrigin, lightDir);
+    double shadowDist = 0.0;
+    return FindClosestIntersection(objects, shadowRay, shadowDist) != nullptr;
+}
+ 
 std::array<int, 3> Renderer::ComputeShading(
+    const std::vector<std::unique_ptr<IObject>>& objects,
     const IObject* hitObject,
     const math::Point3D& hitPoint,
     const core::Ray& ray,
     const std::vector<std::unique_ptr<ILight>>& lights)
 {
     (void)ray;
-
+ 
     const math::Vector3D normal = hitObject->GetNormal(hitPoint).normalized();
     const std::array<int, 3> base = hitObject->GetColor();
-
+ 
     double totalIntensity = 0.0;
-
+ 
     if (lights.empty()) {
         // Fallback si aucune lumière dans la scène
         const math::Vector3D fallbackDir = math::Vector3D(-0.4, -1.0, -0.6).normalized() * -1.0;
@@ -90,13 +101,20 @@ std::array<int, 3> Renderer::ComputeShading(
             if (!light) continue;
             switch (light->GetType()) {
                 case LightType::Ambient:
+                    // La lumière ambiante n'est jamais bloquée par les ombres
                     totalIntensity += light->GetIntensity();
                     break;
                 case LightType::Directional: {
                     const auto dir = light->GetDirection();
                     const math::Vector3D lightDir = math::Vector3D(
                         -dir[0], -dir[1], -dir[2]).normalized();
-                    totalIntensity += std::max(0.0, normal.dot(lightDir)) * light->GetIntensity();
+                    const double diff = std::max(0.0, normal.dot(lightDir));
+                    if (diff <= 0.0)
+                        break;
+                    // Offset pour éviter l'auto-intersection
+                    const math::Point3D shadowOrigin = hitPoint + (normal * 0.001);
+                    if (!IsInShadow(objects, shadowOrigin, lightDir))
+                        totalIntensity += diff * light->GetIntensity();
                     break;
                 }
                 default:
@@ -104,7 +122,7 @@ std::array<int, 3> Renderer::ComputeShading(
             }
         }
     }
-
+ 
     const double intensity = std::clamp(totalIntensity, 0.0, 1.0);
     return {
         static_cast<int>(std::clamp(static_cast<double>(base[0]) * intensity, 0.0, 255.0)),
@@ -135,7 +153,7 @@ void Renderer::ComputePixel(
     }
 
     const math::Point3D hitPoint = ray.at(closestDistance);
-    tile.SetColor(ComputeShading(hitObject, hitPoint, ray, lights));
+    tile.SetColor(ComputeShading(objects, hitObject, hitPoint, ray, lights));
     tile.SetState(COMPUTED);
 }
 

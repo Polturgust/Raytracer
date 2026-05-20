@@ -84,7 +84,21 @@ private:
     );
 
     /**
+     * @brief Check if a point is in shadow for a given light direction
+     * @param objects List of scene objects
+     * @param shadowOrigin Origin of the shadow ray (hit point + offset)
+     * @param lightDir Normalized direction toward the light
+     * @return true if the point is in shadow
+     */
+    bool IsInShadow(
+        const std::vector<std::unique_ptr<IObject>>& objects,
+        const math::Point3D& shadowOrigin,
+        const math::Vector3D& lightDir
+    );
+
+    /**
      * @brief Compute shading for hit point using scene lights
+     * @param objects List of scene objects (for shadow rays)
      * @param hitObject Object that was hit
      * @param hitPoint 3D point of intersection
      * @param ray Ray that hit
@@ -92,6 +106,7 @@ private:
      * @return RGB shaded color
      */
     std::array<int, 3> ComputeShading(
+        const std::vector<std::unique_ptr<IObject>>& objects,
         const IObject* hitObject,
         const math::Point3D& hitPoint,
         const core::Ray& ray,

@@ -88,12 +88,14 @@ private:
      * @param objects List of scene objects
      * @param shadowOrigin Origin of the shadow ray (hit point + offset)
      * @param lightDir Normalized direction toward the light
+     * @param maxDistance Max distance to check (use 1e30 for directional, distToLight for point)
      * @return true if the point is in shadow
      */
     bool IsInShadow(
         const std::vector<std::unique_ptr<IObject>>& objects,
         const math::Point3D& shadowOrigin,
-        const math::Vector3D& lightDir
+        const math::Vector3D& lightDir,
+        double maxDistance
     );
 
     /**

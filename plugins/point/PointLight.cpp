@@ -2,39 +2,33 @@
 ** EPITECH PROJECT, 2025
 ** G-OOP-400-NCE-4-1-raytracer-8
 ** File description:
-** DirectionalLight.cpp
+** PointLight.cpp
 */
 
-#include "DirectionalLight.hpp"
+#include "PointLight.hpp"
 #include "SoType.hpp"
 #include <map>
 #include <string>
-#include <stdexcept>
 
 namespace raytracer {
 
-    DirectionalLight::DirectionalLight(std::array<double, 3> direction, double intensity, std::array<int, 3> color)
-        : _direction(direction), _intensity(intensity), _color(color)
+    PointLight::PointLight(std::array<double, 3> position, double intensity, std::array<int, 3> color)
+        : _position(position), _intensity(intensity), _color(color)
     {
     }
 
-    LightType DirectionalLight::GetType() const 
-    {
-        return LightType::Directional;
+    LightType PointLight::GetType() const {
+        return LightType::Point;
     }
 
-    std::array<double, 3> DirectionalLight::GetDirection() const 
-    {
-        return _direction;
+    std::array<double, 3> PointLight::GetDirection() const {
+        return _position;
     }
-
-    double DirectionalLight::GetIntensity() const
-    {
+    double PointLight::GetIntensity() const {
         return _intensity;
     }
 
-    std::array<int, 3> DirectionalLight::GetColor() const
-    {
+    std::array<int, 3> PointLight::GetColor() const {
         return _color;
     }
 
@@ -77,10 +71,10 @@ extern "C" {
 
     raytracer::ILight* getLight(std::map<std::string, std::string> params)
     {
-        std::array<double, 3> dir = {
-            parseDouble(params, "x",  0.0),
-            parseDouble(params, "y", -1.0),
-            parseDouble(params, "z",  0.0)
+        std::array<double, 3> position = {
+            parseDouble(params, "x", 0.0),
+            parseDouble(params, "y", 0.0),
+            parseDouble(params, "z", 0.0)
         };
         double intensity = parseDouble(params, "intensity", 1.0);
         std::array<int, 3> color = {
@@ -88,7 +82,7 @@ extern "C" {
             parseInt(params, "color.g", 255),
             parseInt(params, "color.b", 255)
         };
-        return new raytracer::DirectionalLight(dir, intensity, color);
+        return new raytracer::PointLight(position, intensity, color);
     }
 
 }

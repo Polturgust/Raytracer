@@ -29,7 +29,7 @@ public:
     /**
      * @brief Compute ray-tracing for a single pixel
      * @param objects List of scene objects
-     * @param lights List of scene lights (unused for now)
+     * @param lights List of scene lights
      * @param camera Camera parameters (position, resolution, FOV)
      * @param tile Output tile to write color to
      * @param x Pixel X coordinate
@@ -84,16 +84,18 @@ private:
     );
 
     /**
-     * @brief Compute shading for hit point
+     * @brief Compute shading for hit point using scene lights
      * @param hitObject Object that was hit
      * @param hitPoint 3D point of intersection
      * @param ray Ray that hit
+     * @param lights List of scene lights
      * @return RGB shaded color
      */
     std::array<int, 3> ComputeShading(
         const IObject* hitObject,
         const math::Point3D& hitPoint,
-        const core::Ray& ray
+        const core::Ray& ray,
+        const std::vector<std::unique_ptr<ILight>>& lights
     );
 };
 

@@ -48,7 +48,7 @@ core::Ray Renderer::GenerateRay(
     const double dY = static_cast<double>(y);
     const double sx = ((dX + 0.5) / dWidth * 2.0 - 1.0) * aspect * imageScale;
     const double sy = (1.0 - (dY + 0.5) / height * 2.0) * imageScale;
-    
+
     const math::Vector3D direction(sx, sy, 1.0);
 
     return core::Ray(origin, direction.normalized());
@@ -79,12 +79,44 @@ const IObject* Renderer::FindClosestIntersection(
 std::array<int, 3> Renderer::ComputeShading(
     const IObject* hitObject,
     const math::Point3D& hitPoint,
-    const core::Ray& ray)
+    const core::Ray& ray,
+    const std::vector<std::unique_ptr<ILight>>& lights)
 {
-    (void)ray; // Unused for basic diffuse shading
-    (void)hitPoint;
+    (void)ray;
 
-    return hitObject->GetColor();
+    const math::Vector3D normal = hitObject->GetNormal(hitPoint).normalized();
+    const std::array<int, 3> base = hitObject->GetColor();
+
+    double ambientIntensity = 0.15;
+    double diffuseIntensity = 0.0;
+
+    for (const auto& light : lights) {
+        if (!light)
+            continue;
+        if (light->GetType() == LightType::Directional) {
+            const auto dir = light->GetDirection();
+            const math::Vector3D lightDir = math::Vector3D(
+                -dir[0], -dir[1], -dir[2]).normalized();
+            const double diff = std::max(0.0, normal.dot(lightDir));
+            diffuseIntensity += diff * light->GetIntensity();
+        }
+        if (light->GetType() == LightType::Ambient) {
+            ambientIntensity += light->GetIntensity();
+        }
+    }
+
+    if (lights.empty()) {
+        const math::Vector3D fallbackDir = math::Vector3D(-0.4, -1.0, -0.6).normalized() * -1.0;
+        diffuseIntensity = std::max(0.0, normal.dot(fallbackDir)) * 0.85;
+    }
+
+    const double intensity = std::clamp(ambientIntensity + diffuseIntensity, 0.0, 1.0);
+
+    return {
+        static_cast<int>(std::clamp(static_cast<double>(base[0]) * intensity, 0.0, 255.0)),
+        static_cast<int>(std::clamp(static_cast<double>(base[1]) * intensity, 0.0, 255.0)),
+        static_cast<int>(std::clamp(static_cast<double>(base[2]) * intensity, 0.0, 255.0))
+    };
 }
 
 void Renderer::ComputePixel(
@@ -97,7 +129,6 @@ void Renderer::ComputePixel(
     std::size_t width)
 {
     tile.SetState(COMPUTING);
-    (void)lights;
 
     const core::Ray ray = GenerateRay(camera, x, y, width);
     double closestDistance = 0.0;
@@ -110,7 +141,7 @@ void Renderer::ComputePixel(
     }
 
     const math::Point3D hitPoint = ray.at(closestDistance);
-    const std::array<int, 3> color = ComputeShading(hitObject, hitPoint, ray);
+    const std::array<int, 3> color = ComputeShading(hitObject, hitPoint, ray, lights);
     tile.SetColor(color);
     tile.SetState(COMPUTED);
 }

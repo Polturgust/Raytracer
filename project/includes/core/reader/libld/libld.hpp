@@ -12,8 +12,11 @@
     #include <memory>
     #include <iostream>
     #include <map>
+    #include <vector>
+    #include <string>
 
     #include "IObject.hpp"
+    #include "ILight.hpp"
     #include "SoType.hpp"
     #include "Warning.hpp"
     #include "Error.hpp"
@@ -21,9 +24,14 @@
 namespace raytracer {
 
 class ld {
+    std::vector<void*> _handles;
+
 public:
     ld() {};
-    ~ld() {};
+    ~ld() {
+        for (auto h : _handles)
+            dlclose(h);
+    };
 
     template<typename T>
     std::unique_ptr <T> load(std::string path, std::map<std::string, std::string> param) {
@@ -32,18 +40,31 @@ public:
         if (!handle)
             throw Warning("No file match in plugin with name : " + realpath);
         dlerror();
+        auto getSoType = reinterpret_cast<SoTypeEnum (*) ()> (dlsym(handle, "getSOType"));
         const char* err = dlerror();
-        /*auto getSoType = reinterpret_cast<SoTypeEnum (*) ()> (dlsym(handle, "getSOType"));
-        if (err) {
+        if (err || !getSoType) {
             dlclose(handle);
-            throw Error("So type not found");
+            throw Error("libld : getSOType not found in " + realpath + ".\n");
         }
-        SoTypeEnum type = getSoType();*/
-        T* (*getObject)(std::map<std::string, std::string>) = reinterpret_cast<T* (*)(std::map<std::string, std::string>)> (dlsym(handle, "getObject"));
-        if (err) {
+        SoTypeEnum type = getSoType();
+        T* (*getObject)(std::map<std::string, std::string>) = nullptr;
+        switch (type) {
+            case OBJECT:
+                getObject = reinterpret_cast<T* (*)(std::map<std::string, std::string>)> (dlsym(handle, "getObject")); break;
+            case LIGHT:
+                getObject = reinterpret_cast<T* (*)(std::map<std::string, std::string>)> (dlsym(handle, "getLight")); break;
+            case Texture:
+                getObject = reinterpret_cast<T* (*)(std::map<std::string, std::string>)> (dlsym(handle, "getTexture")); break;
+            default:
+                dlclose(handle);
+                throw Error("libld : unknown SoTypeEnum in " + realpath + ".\n");
+        }
+        err = dlerror();
+        if (err || !getObject) {
             dlclose(handle);
-            throw Error("libld : getObject not found.");
+            throw Error("libld : factory function not found in " + realpath + ".\n");
         }
+        _handles.push_back(handle);
         return std::unique_ptr<T> (getObject(param));
     }
 };

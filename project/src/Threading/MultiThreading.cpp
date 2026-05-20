@@ -16,7 +16,17 @@ bool MultiThread::isEnd(void) {
     return 1;
 }
 
-int MultiThread::Compute(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector< std::vector<Tile>>& map, std::size_t start, std::size_t max, std::size_t& CalculingRow) {
+int MultiThread::Compute(
+    const std::vector<std::unique_ptr<IObject>>& objects,
+    const std::vector<std::unique_ptr<ILight>>& lights,
+    const render::Camera& camera,
+    std::vector<std::vector<Tile>>& map,
+    std::size_t start,
+    std::size_t max,
+    std::size_t& CalculingRow,
+    double ambient,
+    double diffuse)
+{
     for (auto& t: thread)
         t.get();
     thread.clear();
@@ -27,10 +37,10 @@ int MultiThread::Compute(const std::vector<std::unique_ptr<IObject>>& objects, c
     const std::size_t pixelWidth = map[0].size();
 
     for (std::size_t y = start; y < max; y++) {
-        thread.push_back(std::async(std::launch::async, [&objects, &lights, &camera, &map, &renderer, y, &CalculingRow, pixelWidth]() {
+        thread.push_back(std::async(std::launch::async, [&objects, &lights, &camera, &map, &renderer, y, &CalculingRow, pixelWidth, ambient, diffuse]() {
             for (std::size_t i = 0; i < map[y].size(); ++i) {
                 Tile& tile = map[y][i];
-                renderer.ComputePixel(objects, lights, camera, tile, i, y, pixelWidth);
+                renderer.ComputePixel(objects, lights, camera, tile, i, y, pixelWidth, ambient, diffuse);
             }
             CalculingRow++;
         }));

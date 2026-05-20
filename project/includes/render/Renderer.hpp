@@ -35,6 +35,8 @@ public:
      * @param x Pixel X coordinate
      * @param y Pixel Y coordinate
      * @param width Image width
+     * @param ambient Ambient light intensity from scene
+     * @param diffuse Diffuse light multiplier from scene
      */
     void ComputePixel(
         const std::vector<std::unique_ptr<IObject>>& objects,
@@ -43,7 +45,9 @@ public:
         Tile& tile,
         std::size_t x,
         std::size_t y,
-        std::size_t width
+        std::size_t width,
+        double ambient,
+        double diffuse
     );
 
 private:
@@ -89,13 +93,17 @@ private:
      * @param hitPoint 3D point of intersection
      * @param ray Ray that hit
      * @param lights List of scene lights
+     * @param ambient Ambient light intensity from scene
+     * @param diffuse Diffuse light multiplier from scene
      * @return RGB shaded color
      */
     std::array<int, 3> ComputeShading(
         const IObject* hitObject,
         const math::Point3D& hitPoint,
         const core::Ray& ray,
-        const std::vector<std::unique_ptr<ILight>>& lights
+        const std::vector<std::unique_ptr<ILight>>& lights,
+        double ambient,
+        double diffuse
     );
 };
 

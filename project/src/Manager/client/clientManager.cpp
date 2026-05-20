@@ -201,13 +201,15 @@ void ClientManager::ProcessWaitingStates(Core& core) {
     }
 }
 
-void ClientManager::Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map)
+void ClientManager::Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map, double ambient, double diffuse)
 {
     DoPoll();
     (void)map;
     (void)objects;
     (void)lights;
     (void)camera;
+    (void)ambient;
+    (void)diffuse;
 }
 
 void ClientManager::InitCore(Core& core) {

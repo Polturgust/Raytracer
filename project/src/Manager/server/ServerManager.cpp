@@ -156,11 +156,13 @@ std::size_t ServerManager::GetUid() {
     return _clients.size() + 1;
 }
 
-void ServerManager::Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map) {
+void ServerManager::Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map, double ambient, double diffuse) {
     (void)map;
     (void)objects;
     (void)lights;
     (void)camera;
+    (void)ambient;
+    (void)diffuse;
 
     DoPoll();
 

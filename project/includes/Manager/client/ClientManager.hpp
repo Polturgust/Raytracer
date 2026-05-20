@@ -65,7 +65,7 @@ public:
     bool HasMessage() const;
     std::string PopMessage();
 
-    void Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map);
+    void Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map, double ambient, double diffuse);
     void InitCore(Core& core) override;
 };
 

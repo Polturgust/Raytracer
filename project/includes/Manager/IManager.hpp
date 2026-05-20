@@ -29,7 +29,7 @@ public:
     ~IManager() = default;
 
     virtual void InitCore(Core& core) = 0;
-    virtual void Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map) = 0;
+    virtual void Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map, double ambient, double diffuse) = 0;
     virtual State GetState(void) = 0;
 };
 

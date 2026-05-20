@@ -105,11 +105,6 @@ std::array<int, 3> Renderer::ComputeShading(
         }
     }
 
-    if (lights.empty()) {
-        const math::Vector3D fallbackDir = math::Vector3D(-0.4, -1.0, -0.6).normalized() * -1.0;
-        diffuseIntensity = std::max(0.0, normal.dot(fallbackDir)) * 0.85;
-    }
-
     const double intensity = std::clamp(ambientIntensity + diffuseIntensity, 0.0, 1.0);
 
     return {

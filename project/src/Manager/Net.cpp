@@ -6,7 +6,15 @@
 */
 
 #include "Net.hpp"
+
+#include <cerrno>
+#include <cstring>
+
 namespace raytracer {
+
+static std::string Errno() {
+    return std::string(" (") + std::strerror(errno) + ")";
+}
 
 TcpSocket::~TcpSocket() {
     Close();
@@ -36,18 +44,19 @@ void TcpSocket::Connect(const std::string& ip, std::uint16_t port) {
     Close();
     _fd = ::socket(AF_INET, SOCK_STREAM, 0);
     if (_fd < 0)
-        throw Error("TcpSocket: cannot create socket.");
+        throw Error("TcpSocket: cannot create socket" + Errno() + ".");
 
     sockaddr_in addr{};
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
     if (::inet_pton(AF_INET, ip.c_str(), &addr.sin_addr) != 1) {
         Close();
-        throw Error("TcpSocket: invalid ip address.");
+        throw Error("TcpSocket: invalid ip address '" + ip + "'.");
     }
     if (::connect(_fd, reinterpret_cast<sockaddr *>(&addr), sizeof(addr)) < 0) {
+        const std::string e = Errno();
         Close();
-        throw Error("TcpSocket: cannot connect to server.");
+        throw Error("TcpSocket: cannot connect to " + ip + ":" + std::to_string(port) + e + ".");
     }
 }
 
@@ -55,12 +64,13 @@ void TcpSocket::Listen(std::uint16_t port, int backlog) {
     Close();
     _fd = ::socket(AF_INET, SOCK_STREAM, 0);
     if (_fd < 0)
-        throw Error("TcpSocket: cannot create socket.");
+        throw Error("TcpSocket: cannot create socket" + Errno() + ".");
 
     const int opt = 1;
     if (::setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+        const std::string e = Errno();
         Close();
-        throw Error("TcpSocket: cannot configure socket reuse option.");
+        throw Error("TcpSocket: cannot configure socket reuse option" + e + ".");
     }
 
     sockaddr_in addr{};
@@ -68,12 +78,14 @@ void TcpSocket::Listen(std::uint16_t port, int backlog) {
     addr.sin_port = htons(port);
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
     if (::bind(_fd, reinterpret_cast<sockaddr *>(&addr), sizeof(addr)) < 0) {
+        const std::string e = Errno();
         Close();
-        throw Error("TcpSocket: cannot access port: " + std::to_string(port) + ".");
+        throw Error("TcpSocket: cannot bind port " + std::to_string(port) + e + ".");
     }
     if (::listen(_fd, backlog) < 0) {
+        const std::string e = Errno();
         Close();
-        throw Error("TcpSocket: " + std::to_string(port) + " is not a free port.");
+        throw Error("TcpSocket: cannot listen on port " + std::to_string(port) + e + ".");
     }
 }
 
@@ -85,7 +97,7 @@ TcpSocket TcpSocket::Accept() const {
     socklen_t clientLen = sizeof(clientAddr);
     const int clientFd = ::accept(_fd, reinterpret_cast<sockaddr *>(&clientAddr), &clientLen);
     if (clientFd < 0)
-        throw Error("TcpSocket: cannot accept a new client.");
+        throw Error("TcpSocket: cannot accept a new client" + Errno() + ".");
     return TcpSocket(clientFd);
 }
 
@@ -94,7 +106,7 @@ std::size_t TcpSocket::Send(const std::string& message) const {
         throw Error("TcpSocket: socket is not connected.");
     const ssize_t size = ::send(_fd, message.c_str(), message.size(), 0);
     if (size < 0)
-        throw Error("TcpSocket: cannot send data.");
+        throw Error("TcpSocket: cannot send data" + Errno() + ".");
     return static_cast<std::size_t>(size);
 }
 
@@ -105,7 +117,7 @@ void TcpSocket::SendAll(const char *data, std::size_t len) const {
     while (sent < len) {
         const ssize_t n = ::send(_fd, data + sent, len - sent, 0);
         if (n < 0)
-            throw Error("TcpSocket: cannot send data.");
+            throw Error("TcpSocket: cannot send data" + Errno() + ".");
         if (n == 0)
             throw Error("TcpSocket: connection closed during send.");
         sent += static_cast<std::size_t>(n);
@@ -119,7 +131,7 @@ std::string TcpSocket::Receive() const {
     char buffer[4096];
     const ssize_t size = ::recv(_fd, buffer, sizeof(buffer), 0);
     if (size < 0)
-        throw Error("TcpSocket: cannot receive data.");
+        throw Error("TcpSocket: cannot receive data" + Errno() + ".");
     if (size == 0)
         return std::string();
     return std::string(buffer, static_cast<std::size_t>(size));
@@ -130,7 +142,7 @@ std::size_t TcpSocket::ReceiveBlock(char *buf, std::size_t cap) const {
         throw Error("TcpSocket: socket is not connected.");
     const ssize_t n = ::recv(_fd, buf, cap, 0);
     if (n < 0)
-        throw Error("TcpSocket: cannot receive data.");
+        throw Error("TcpSocket: cannot receive data" + Errno() + ".");
     return static_cast<std::size_t>(n);
 }
 
@@ -140,7 +152,7 @@ std::uint16_t TcpSocket::LocalPort() const {
     sockaddr_in addr{};
     socklen_t len = sizeof(addr);
     if (::getsockname(_fd, reinterpret_cast<sockaddr *>(&addr), &len) < 0)
-        throw Error("TcpSocket: getsockname failed.");
+        throw Error("TcpSocket: getsockname failed" + Errno() + ".");
     return ntohs(addr.sin_port);
 }
 
@@ -150,10 +162,10 @@ std::string TcpSocket::LocalIp() const {
     sockaddr_in addr{};
     socklen_t len = sizeof(addr);
     if (::getsockname(_fd, reinterpret_cast<sockaddr *>(&addr), &len) < 0)
-        throw Error("TcpSocket: getsockname failed.");
+        throw Error("TcpSocket: getsockname failed" + Errno() + ".");
     char buf[INET_ADDRSTRLEN] = {0};
     if (::inet_ntop(AF_INET, &addr.sin_addr, buf, sizeof(buf)) == nullptr)
-        throw Error("TcpSocket: inet_ntop failed.");
+        throw Error("TcpSocket: inet_ntop failed" + Errno() + ".");
     return std::string(buf);
 }
 

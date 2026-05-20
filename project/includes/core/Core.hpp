@@ -17,6 +17,7 @@
 
     #include "IManager.hpp"
     #include "Error.hpp"
+    #include "Warning.hpp"
     #include "Tile.hpp"
     #include "IReader.hpp"
     #include "IObject.hpp"
@@ -53,6 +54,10 @@ public:
     void Run();
 
     void Init();
+    void SetReader(std::unique_ptr<IReader> reader);
+    IReader& GetReader();
+    void ReloadObjectsAndLights();
+    void MarkInitialized();
 };
 
 }

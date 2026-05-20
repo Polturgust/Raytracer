@@ -8,54 +8,47 @@
 #ifndef SERVERMANAGER_HPP
     #define SERVERMANAGER_HPP
     #include <cstdint>
-    #include <algorithm>
-    #include <cstring>
+    #include <sstream>
     #include <string>
     #include <vector>
-    #include <sys/socket.h>
-    #include <arpa/inet.h>
-    #include <poll.h>
-    #include <unistd.h>
     #include <iostream>
+    #include <fstream>
+    #include <utility>
 
     #include "AManager.hpp"
     #include "Error.hpp"
     #include "Warning.hpp"
 
-#include <sys/socket.h>
-
 namespace raytracer {
 
-class Client {
-public:
-    int fd;
+struct Client {
+    TcpSocket socket;
     std::string cmd = "";
     bool doWrite = false;
     bool doRead = false;
+    std::size_t Uid;
     std::vector<std::string> MsgQueu;
 
-    explicit Client(int fd): fd(fd) {};
-    ~Client() {if (fd != -1) close(fd);}
-};
-
-class ServerPoll {
-    int _fd;
-public:
-    ServerPoll(int port);
-    ~ServerPoll() {if (_fd != -1) close(_fd);};
-
-    void paul(std::vector<Client>& cliList);
+    explicit Client(TcpSocket sock, std::size_t uid): socket(std::move(sock)), Uid(uid) {};
 };
 
 class ServerManager : public AManager {
     std::string _configFile;
 
-    std::vector<Client> clients;
-    ServerPoll paul;
+    TcpSocket _listen;
+    Poller _poller;
+    std::vector<Client> _clients;
 
-    friend class ServerPoll;
+    void HandleCommand(Client& cl, const std::string& line);
+    void HandleFGet(Client& cl, std::istringstream& iss);
+    void Reply(Client& cl, const std::string& message);
+    void DoPoll();
+
+    std::size_t GetUid(void);
 public:
-    ServerManager(int port, std::string configFile): _configFile(configFile), paul(port) {};
+    ServerManager(int port, std::string configFile): _configFile(configFile) {
+        _listen.Listen(static_cast<std::uint16_t>(port));
+    };
     ~ServerManager() = default;
 
     void Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map);

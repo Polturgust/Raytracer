@@ -233,7 +233,7 @@ int Mesh::buildBVHNode(int start, int end) {
         node.bounds.expand(t.v2);
     }
     int myIndex = static_cast<int>(_bvhNodes.size());
-    _bvhNodes.push_back(node); // placeholder
+    _bvhNodes.push_back(node);
 
     if (node.count <= 4) {
         _bvhNodes[myIndex] = node;
@@ -318,7 +318,6 @@ IObject* getObject(std::map<std::string, std::string> params) {
                     std::istringstream iss(line.substr(2));
                     double x, y, z;
                     if (iss >> x >> y >> z) {
-                        // store scaled vertices (apply rotation & translation when triangulating)
                         vertices.push_back(math::Point3D(x * scale, y * scale, z * scale));
                     }
                 }
@@ -338,22 +337,18 @@ IObject* getObject(std::map<std::string, std::string> params) {
                         continue;
                     }
                 }
-                // rotation helper (degrees -> radians)
                 const double deg2rad = 3.14159265358979323846 / 180.0;
                 double rx = rot_x * deg2rad;
                 double ry = rot_y * deg2rad;
                 double rz = rot_z * deg2rad;
 
                 auto rotatePoint = [&](const math::Point3D& p)->math::Point3D {
-                    // rotate X
                     double x1 = p.x;
                     double y1 = p.y * std::cos(rx) - p.z * std::sin(rx);
                     double z1 = p.y * std::sin(rx) + p.z * std::cos(rx);
-                    // rotate Y
                     double x2 = x1 * std::cos(ry) + z1 * std::sin(ry);
                     double y2 = y1;
                     double z2 = -x1 * std::sin(ry) + z1 * std::cos(ry);
-                    // rotate Z
                     double x3 = x2 * std::cos(rz) - y2 * std::sin(rz);
                     double y3 = x2 * std::sin(rz) + y2 * std::cos(rz);
                     double z3 = z2;
@@ -373,7 +368,6 @@ IObject* getObject(std::map<std::string, std::string> params) {
             }
         }
         file.close();
-        // build BVH for faster intersection
         mesh->buildBVH();
         return mesh;
     } catch (const std::exception& e) {

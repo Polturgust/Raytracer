@@ -21,6 +21,7 @@ typedef enum {
     WORKING,
     FINISH,
     WAIT,
+    ASK,
 } State;
 
 class Core;

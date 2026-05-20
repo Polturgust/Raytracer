@@ -15,10 +15,10 @@ std::size_t Argument::TestPort(std::string port) {
     try {
         nb = std::stoull(port, &idx);
     } catch (const std::exception&) {
-        throw Error(port + " : Not a valid port.\n");
+        throw Error(port + " : Not a valid port.");
     }
     if (idx != port.size() || nb == 0 || nb > 65535)
-        throw Error(port + " : Not a valid port.\n");
+        throw Error(port + " : Not a valid port.");
     return nb;
 }
 
@@ -29,9 +29,9 @@ void Argument::TestIp(const std::string ip) {
 
     for (int i = 0; i < 4; ++i)
         if (!(ss >> octets[i]) || (octets[i] < 0 || octets[i] > 255) || (i < 3 && (!(ss >> dot) || dot != '.')))
-            throw Error(ip + " is not a valid Ip.\n");
+            throw Error(ip + " is not a valid Ip.");
     if (!(ss.eof() || ss.peek() == EOF))
-        throw Error(ip + " is not a valid Ip.\n");
+        throw Error(ip + " is not a valid Ip.");
 }
 
 void Argument::TestFile(std::string files) {
@@ -39,8 +39,8 @@ void Argument::TestFile(std::string files) {
 
     if (!std::filesystem::exists(files, ec)) {
         if (ec)
-            throw Error(files + " : " + ec.message() + ".\n");
-        throw Error(files + " : File not found.\n");
+            throw Error(files + " : " + ec.message() + ".");
+        throw Error(files + " : File not found.");
     }
 }
 
@@ -50,7 +50,7 @@ void Argument::Test() {
     if (argc > 4)
         throw Error("Too few argument.\n");
     if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0)
-        throw Warning("SAGE:\n\t./raytracer [-option] <SCENE_FILE> [...]\n\nSCENE_FILE:\n\tscene configuration"
+        throw Warning("USAGE:\n\t./raytracer [-option] <SCENE_FILE> [...]\n\nSCENE_FILE:\n\tscene configuration"
         "\n\nOPTION:\n\tnone, -d, --default + <SCENE_FILE> : lunch the raytracer in default mode."
         "\n\t-s, --server + <SCENE_FILE> <port> : lunch the raytracer in mode server on the port <port>."
         "\n\t-c, --client + <ip> <port> \t   : lunch the raytracer in client mode and connect it at the ip <ip> and on the port <port>."
@@ -76,7 +76,7 @@ void Argument::Test() {
         TestFile(std::string(argv[1]));
         _sceneFile = argv[1];
     } else
-        throw Error("Invalid argument, try ./raytracer --help.\n");
+        throw Error("Invalid argument, try ./raytracer --help.");
 }
 
 

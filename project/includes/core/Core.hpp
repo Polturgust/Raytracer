@@ -45,6 +45,9 @@ class Core {
 
     std::vector<std::unique_ptr<IObject>> Objects;
     std::vector<std::unique_ptr<ILight>> Lights;
+    double _ambient = 0.0;
+    double _diffuse = 0.0;
+
 public:
     std::vector<std::vector<Tile>> map;
 
@@ -52,12 +55,18 @@ public:
     ~Core() = default;
 
     void Run();
-
     void Init();
     void SetReader(std::unique_ptr<IReader> reader);
     IReader& GetReader();
     void ReloadObjectsAndLights();
     void MarkInitialized();
+
+    double GetAmbient() const {
+        return _ambient;
+    }
+    double GetDiffuse() const {
+        return _diffuse;
+    }
 };
 
 }

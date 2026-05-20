@@ -49,7 +49,7 @@ void ServerManager::HandleFGet(Client& cl, std::istringstream& iss) {
         return;
     }
     try {
-        FileSender::Stream(data, resolved);
+        FileSender::Stream(data, realpath);
     } catch (const IError&) {
         Reply(cl, "500 ERROR");
         return;

@@ -42,6 +42,7 @@ public:
     void SendAll(const char *data, std::size_t len) const;
     std::string Receive() const;
     std::size_t ReceiveBlock(char *buf, std::size_t cap) const;
+    void ReceiveExact(char *buf, std::size_t n) const;
 
     std::uint16_t LocalPort() const;
     std::string LocalIp() const;

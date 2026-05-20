@@ -146,6 +146,20 @@ std::size_t TcpSocket::ReceiveBlock(char *buf, std::size_t cap) const {
     return static_cast<std::size_t>(n);
 }
 
+void TcpSocket::ReceiveExact(char *buf, std::size_t n) const {
+    if (_fd == -1)
+        throw Error("TcpSocket: socket is not connected.");
+    std::size_t got = 0;
+    while (got < n) {
+        const ssize_t r = ::recv(_fd, buf + got, n - got, 0);
+        if (r < 0)
+            throw Error("TcpSocket: cannot receive data" + Errno() + ".");
+        if (r == 0)
+            throw Error("TcpSocket: connection closed before " + std::to_string(n) + " bytes received.");
+        got += static_cast<std::size_t>(r);
+    }
+}
+
 std::uint16_t TcpSocket::LocalPort() const {
     if (_fd == -1)
         throw Error("TcpSocket: cannot query local port on closed socket.");

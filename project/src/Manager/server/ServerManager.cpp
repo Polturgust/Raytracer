@@ -33,9 +33,8 @@ void ServerManager::HandleFGet(Client& cl, std::istringstream& iss) {
         okFilename = (slash == std::string::npos) ? _configFile : _configFile.substr(slash + 1);
     } else
         realpath = path;
-
     {
-        std::ifstream test(resolved, std::ios::binary);
+        std::ifstream test(realpath, std::ios::binary);
         if (!test.is_open()) {
             Reply(cl, "404 NOT FOUND");
             return;

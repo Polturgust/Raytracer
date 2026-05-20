@@ -6,9 +6,6 @@
 */
 
 #include "Net.hpp"
-
-#include <fstream>
-
 namespace raytracer {
 
 TcpSocket::~TcpSocket() {
@@ -147,6 +144,19 @@ std::uint16_t TcpSocket::LocalPort() const {
     return ntohs(addr.sin_port);
 }
 
+std::string TcpSocket::LocalIp() const {
+    if (_fd == -1)
+        throw Error("TcpSocket: cannot query local ip on closed socket.");
+    sockaddr_in addr{};
+    socklen_t len = sizeof(addr);
+    if (::getsockname(_fd, reinterpret_cast<sockaddr *>(&addr), &len) < 0)
+        throw Error("TcpSocket: getsockname failed.");
+    char buf[INET_ADDRSTRLEN] = {0};
+    if (::inet_ntop(AF_INET, &addr.sin_addr, buf, sizeof(buf)) == nullptr)
+        throw Error("TcpSocket: inet_ntop failed.");
+    return std::string(buf);
+}
+
 void Poller::Clear() {
     _polls.clear();
 }
@@ -197,6 +207,44 @@ void FileReceiver::Receive(const std::string& outPath) {
             break;
         out.write(buffer, static_cast<std::streamsize>(n));
     }
+}
+
+void NetLog::LogReceive(const std::string& msg, std::size_t uid) {
+    std::istringstream iss(msg);
+    int code = 0;
+    auto color = Color::WHITE;
+
+    if ((iss >> code)) {
+        if (code >= 400)
+            color = Color::RED;
+        else
+            color = Color::GREEN;
+    }
+    std::cout << Color::BG_MAGENTA << "Receive" << Color::RESET;
+    if (uid == 0)
+        std::cout << " : ";
+    else
+        std::cout << " from user " << uid << " : ";
+    std::cout << color << msg << Color::RESET << std::endl;
+}
+
+void NetLog::LogSend(const std::string& msg, std::size_t uid) {
+    std::istringstream iss(msg);
+    int code = 0;
+    auto color = Color::WHITE;
+
+    if ((iss >> code)) {
+        if (code >= 400)
+            color = Color::RED;
+        else
+            color = Color::GREEN;
+    }
+    std::cout << Color::BG_CYAN << "Send" << Color::RESET;
+    if (uid == 0)
+        std::cout << " at server : ";
+    else
+        std::cout << " at user " << uid << " : ";
+    std::cout << color << msg << Color::RESET << std::endl;
 }
 
 }

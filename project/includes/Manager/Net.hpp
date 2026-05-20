@@ -15,8 +15,11 @@
     #include <arpa/inet.h>
     #include <unistd.h>
     #include <cstring>
+    #include <fstream>
+    #include <sstream>
 
     #include "Error.hpp"
+    #include "printer.hpp"
 
 namespace raytracer {
 
@@ -41,6 +44,7 @@ public:
     std::size_t ReceiveBlock(char *buf, std::size_t cap) const;
 
     std::uint16_t LocalPort() const;
+    std::string LocalIp() const;
 
     int Fd() const {return _fd;};
     bool IsOpen() const {return _fd != -1;};
@@ -74,6 +78,15 @@ public:
 
     std::uint16_t Port() const {return _port;};
     void Receive(const std::string& outPath);
+};
+
+class NetLog {
+public:
+    NetLog() = default;
+    ~NetLog() = default;
+
+    void LogReceive(const std::string& msg, std::size_t uid=0);
+    void LogSend(const std::string& msg, std::size_t uid=0);
 };
 
 }

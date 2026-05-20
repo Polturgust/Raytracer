@@ -31,7 +31,7 @@ public:
         std::string realpath("plugins/raytracer_" + path + ".so");
         void *handle = dlopen(realpath.c_str(), RTLD_LAZY);
         if (!handle)
-            throw FileNotFound("No file match in plugin with name : " + realpath);
+            throw Warning("No file match in plugin with name : " + realpath);
         dlerror();
         const char* err = dlerror();
         /*auto getSoType = reinterpret_cast<SoTypeEnum (*) ()> (dlsym(handle, "getSOType"));

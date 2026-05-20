@@ -53,7 +53,7 @@ std::unique_ptr<IReader> CoreBuilder::BuildReader() const {
     if (ext == ".cfg")
         return std::make_unique<CfgReader>(_sceneFile);
     if (ext == ".obj")
-        return std::make_unique<ObjReader>(_sceneFile);
+        return nullptr;
 
     return nullptr;
 }

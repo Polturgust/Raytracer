@@ -135,7 +135,7 @@ void ServerManager::DoPoll() {
     if (_poller.Revents(0) & POLLIN) {
         try {
             Client cl(_listen.Accept(), GetUid());
-            _logger.LogReceive("New conexion." , cl.Uid);
+            _logger.LogReceive("New conexion.", cl.Uid);
             _clients.emplace_back(std::move(cl));
         } catch (const IError& e) {
             std::cerr << "ServerManager: " << e.what();
@@ -156,13 +156,11 @@ std::size_t ServerManager::GetUid() {
     return _clients.size() + 1;
 }
 
-void ServerManager::Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map, double ambient, double diffuse) {
+void ServerManager::Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map) {
     (void)map;
     (void)objects;
     (void)lights;
     (void)camera;
-    (void)ambient;
-    (void)diffuse;
 
     DoPoll();
 

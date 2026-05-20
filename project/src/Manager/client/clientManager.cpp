@@ -23,7 +23,7 @@ void ClientManager::ConnectIfNeeded() {
     if (_connected)
         return;
     _socket.Connect(_ip, _port);
-    _logger.LogSend("Connected to the server at " + _ip + " " +  std::to_string(_port));
+    _logger.LogSend("Connected to the server at " + _ip + " " + std::to_string(_port));
     _connected = true;
     Advance();
 }
@@ -201,15 +201,13 @@ void ClientManager::ProcessWaitingStates(Core& core) {
     }
 }
 
-void ClientManager::Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map, double ambient, double diffuse)
+void ClientManager::Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map)
 {
     DoPoll();
     (void)map;
     (void)objects;
     (void)lights;
     (void)camera;
-    (void)ambient;
-    (void)diffuse;
 }
 
 void ClientManager::InitCore(Core& core) {

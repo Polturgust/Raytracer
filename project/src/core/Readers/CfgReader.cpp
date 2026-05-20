@@ -78,28 +78,11 @@ double CfgReader::GetCameraFieldOfView() {
     return fov;
 }
 
-double CfgReader::GetAmbientLight() {
-    const libconfig::Setting& root = _cfg.getRoot();
-    if (!root.exists("lights"))
-        return 0.0;
-    double ambient = 0.0;
-    root["lights"].lookupValue("ambient", ambient);
-    return ambient;
-}
-
-double CfgReader::GetDiffuseLight() {
-    const libconfig::Setting& root = _cfg.getRoot();
-    if (!root.exists("lights"))
-        return 0.0;
-    double diffuse = 0.0;
-    root["lights"].lookupValue("diffuse", diffuse);
-    return diffuse;
-}
-
 std::vector<std::unique_ptr<ILight>> CfgReader::GetLights() {
     std::vector<std::unique_ptr<ILight>> lights;
 
-    const std::vector<std::string> lightTypes = {"directional", "point"};
+    // Tous les types de lumières sont des plugins chargés comme sublists
+    const std::vector<std::string> lightTypes = {"ambient", "directional", "point"};
 
     for (const auto& type : lightTypes) {
         auto sub = loadSubList<ILight>("lights", type);

@@ -23,9 +23,7 @@ int MultiThread::Compute(
     std::vector<std::vector<Tile>>& map,
     std::size_t start,
     std::size_t max,
-    std::size_t& CalculingRow,
-    double ambient,
-    double diffuse)
+    std::size_t& CalculingRow)
 {
     for (auto& t: thread)
         t.get();
@@ -37,10 +35,10 @@ int MultiThread::Compute(
     const std::size_t pixelWidth = map[0].size();
 
     for (std::size_t y = start; y < max; y++) {
-        thread.push_back(std::async(std::launch::async, [&objects, &lights, &camera, &map, &renderer, y, &CalculingRow, pixelWidth, ambient, diffuse]() {
+        thread.push_back(std::async(std::launch::async, [&objects, &lights, &camera, &map, &renderer, y, &CalculingRow, pixelWidth]() {
             for (std::size_t i = 0; i < map[y].size(); ++i) {
                 Tile& tile = map[y][i];
-                renderer.ComputePixel(objects, lights, camera, tile, i, y, pixelWidth, ambient, diffuse);
+                renderer.ComputePixel(objects, lights, camera, tile, i, y, pixelWidth);
             }
             CalculingRow++;
         }));

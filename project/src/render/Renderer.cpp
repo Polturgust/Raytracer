@@ -72,40 +72,40 @@ std::array<int, 3> Renderer::ComputeShading(
     const IObject* hitObject,
     const math::Point3D& hitPoint,
     const core::Ray& ray,
-    const std::vector<std::unique_ptr<ILight>>& lights,
-    double ambient,
-    double diffuse)
+    const std::vector<std::unique_ptr<ILight>>& lights)
 {
     (void)ray;
 
     const math::Vector3D normal = hitObject->GetNormal(hitPoint).normalized();
     const std::array<int, 3> base = hitObject->GetColor();
 
-    double ambientIntensity = ambient;
-    double diffuseIntensity = 0.0;
+    double totalIntensity = 0.0;
 
     if (lights.empty()) {
-        // Fallback si pas de lumières chargées
+        // Fallback si aucune lumière dans la scène
         const math::Vector3D fallbackDir = math::Vector3D(-0.4, -1.0, -0.6).normalized() * -1.0;
-        diffuseIntensity = std::max(0.0, normal.dot(fallbackDir)) * diffuse;
+        totalIntensity = 0.15 + std::max(0.0, normal.dot(fallbackDir)) * 0.85;
     } else {
         for (const auto& light : lights) {
             if (!light) continue;
-            if (light->GetType() == LightType::Directional) {
-                const auto dir = light->GetDirection();
-                const math::Vector3D lightDir = math::Vector3D(
-                    -dir[0], -dir[1], -dir[2]).normalized();
-                const double diff = std::max(0.0, normal.dot(lightDir));
-                diffuseIntensity += diff * light->GetIntensity() * diffuse;
-            }
-            if (light->GetType() == LightType::Ambient) {
-                ambientIntensity += light->GetIntensity();
+            switch (light->GetType()) {
+                case LightType::Ambient:
+                    totalIntensity += light->GetIntensity();
+                    break;
+                case LightType::Directional: {
+                    const auto dir = light->GetDirection();
+                    const math::Vector3D lightDir = math::Vector3D(
+                        -dir[0], -dir[1], -dir[2]).normalized();
+                    totalIntensity += std::max(0.0, normal.dot(lightDir)) * light->GetIntensity();
+                    break;
+                }
+                default:
+                    break;
             }
         }
     }
 
-    const double intensity = std::clamp(ambientIntensity + diffuseIntensity, 0.0, 1.0);
-
+    const double intensity = std::clamp(totalIntensity, 0.0, 1.0);
     return {
         static_cast<int>(std::clamp(static_cast<double>(base[0]) * intensity, 0.0, 255.0)),
         static_cast<int>(std::clamp(static_cast<double>(base[1]) * intensity, 0.0, 255.0)),
@@ -120,9 +120,7 @@ void Renderer::ComputePixel(
     Tile& tile,
     std::size_t x,
     std::size_t y,
-    std::size_t width,
-    double ambient,
-    double diffuse)
+    std::size_t width)
 {
     tile.SetState(COMPUTING);
 
@@ -137,7 +135,7 @@ void Renderer::ComputePixel(
     }
 
     const math::Point3D hitPoint = ray.at(closestDistance);
-    tile.SetColor(ComputeShading(hitObject, hitPoint, ray, lights, ambient, diffuse));
+    tile.SetColor(ComputeShading(hitObject, hitPoint, ray, lights));
     tile.SetState(COMPUTED);
 }
 

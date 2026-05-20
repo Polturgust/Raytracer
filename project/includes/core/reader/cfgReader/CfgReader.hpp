@@ -100,9 +100,6 @@ public:
     std::array<int, 3> GetCameraRotation();
     double GetCameraFieldOfView();
 
-    double GetAmbientLight();
-    double GetDiffuseLight();
-
     std::vector<std::unique_ptr<IObject>> GetObjects() { return loadLists<IObject>("primitives"); };
     std::vector<std::unique_ptr<ILight>> GetLights();
 };

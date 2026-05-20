@@ -35,8 +35,6 @@ void Core::Init() {
     try {
         Objects = _reader->GetObjects();
         Lights  = _reader->GetLights();
-        _ambient = _reader->GetAmbientLight();
-        _diffuse = _reader->GetDiffuseLight();
     } catch (const IError& e) {
         if (e.code() == 84)
             throw Error("Core : " + static_cast<std::string>(e.what()));
@@ -78,7 +76,7 @@ void Core::Run() {
     while (_manager->GetState() != FINISH && sfml->isOpen()) {
         if (!sfml->pollEvents())
             break;
-        _manager->Update(Objects, Lights, _camera, map, _ambient, _diffuse);
+        _manager->Update(Objects, Lights, _camera, map);
         sfml->render(map);
     }
     if (!_sceneFile.empty())

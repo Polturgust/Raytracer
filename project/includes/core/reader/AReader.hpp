@@ -28,9 +28,6 @@ public:
     std::array<int, 3> GetCameraRotation() = 0;
     double GetCameraFieldOfView() = 0;
 
-    double GetAmbientLight() = 0;
-    double GetDiffuseLight() = 0;
-
     std::vector<std::unique_ptr<IObject>> GetObjects() = 0;
     std::vector<std::unique_ptr<ILight>> GetLights() = 0;
 

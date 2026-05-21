@@ -77,7 +77,17 @@ foreach(PLUGIN_DIR ${PLUGIN_DIRS})
         file(GLOB_RECURSE PLUGIN_SRCS "${PLUGIN_DIR}/*.cpp")
         if(PLUGIN_SRCS)
             add_library(raytracer_${PLUGIN_NAME} SHARED ${PLUGIN_SRCS})
-            set_target_properties(raytracer_${PLUGIN_NAME} PROPERTIES PREFIX "")
+            set(PLUGIN_OUTPUT_NAME ${PLUGIN_NAME})
+            if(PLUGIN_NAME STREQUAL "spheres")
+                set(PLUGIN_OUTPUT_NAME "sphere")
+            elseif(PLUGIN_NAME STREQUAL "planes")
+                set(PLUGIN_OUTPUT_NAME "plane")
+            elseif(PLUGIN_NAME STREQUAL "triangles")
+                set(PLUGIN_OUTPUT_NAME "triangle")
+            elseif(PLUGIN_NAME STREQUAL "cylinders")
+                set(PLUGIN_OUTPUT_NAME "cylinder")
+            endif()
+            set_target_properties(raytracer_${PLUGIN_NAME} PROPERTIES PREFIX "" OUTPUT_NAME "raytracer_${PLUGIN_OUTPUT_NAME}")
             target_include_directories(raytracer_${PLUGIN_NAME}
                 PUBLIC
                     shared

@@ -84,11 +84,11 @@ private:
     );
 
     /**
-     * @brief Check if a point is in shadow for a given light direction
+     * @brief Check if a point is in shadow from a given light direction
      * @param objects List of scene objects
      * @param shadowOrigin Origin of the shadow ray (hit point + offset)
-     * @param lightDir Normalized direction toward the light
-     * @param maxDistance Max distance to check (use 1e30 for directional, distToLight for point)
+     * @param lightDir Direction toward the light
+     * @param maxDistance Maximum distance to check (use 1e30 for directional)
      * @return true if the point is in shadow
      */
     bool IsInShadow(
@@ -99,8 +99,30 @@ private:
     );
 
     /**
+     * @brief Compute RGB contribution of a single light on a hit point
+     * @param objects List of scene objects (for shadow testing)
+     * @param light The light to evaluate
+     * @param normal Surface normal at hit point
+     * @param hitPoint 3D point of intersection
+     * @param base Object base color
+     * @param r Red accumulator (modified in place)
+     * @param g Green accumulator (modified in place)
+     * @param b Blue accumulator (modified in place)
+     */
+    void ComputeLightContribution(
+        const std::vector<std::unique_ptr<IObject>>& objects,
+        const ILight* light,
+        const math::Vector3D& normal,
+        const math::Point3D& hitPoint,
+        const std::array<int, 3>& base,
+        double& r,
+        double& g,
+        double& b
+    );
+
+    /**
      * @brief Compute shading for hit point using scene lights
-     * @param objects List of scene objects (for shadow rays)
+     * @param objects List of scene objects (for shadow testing)
      * @param hitObject Object that was hit
      * @param hitPoint 3D point of intersection
      * @param ray Ray that hit

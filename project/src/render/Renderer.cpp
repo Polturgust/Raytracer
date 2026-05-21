@@ -81,6 +81,64 @@ bool Renderer::IsInShadow(
     return blocker != nullptr && shadowDist < maxDistance;
 }
 
+void Renderer::ComputeLightContribution(
+    const std::vector<std::unique_ptr<IObject>>& objects,
+    const ILight* light,
+    const math::Vector3D& normal,
+    const math::Point3D& hitPoint,
+    const std::array<int, 3>& base,
+    double& r,
+    double& g,
+    double& b)
+{
+    const std::array<int, 3> lc = light->GetColor();
+    const double lr = lc[0] / 255.0;
+    const double lg = lc[1] / 255.0;
+    const double lb = lc[2] / 255.0;
+ 
+    switch (light->GetType()) {
+        case LightType::Ambient: {
+            const double i = light->GetIntensity();
+            r += base[0] * lr * i;
+            g += base[1] * lg * i;
+            b += base[2] * lb * i;
+            break;
+        }
+        case LightType::Directional: {
+            const auto dir = light->GetDirection();
+            const math::Vector3D lightDir = math::Vector3D(
+                -dir[0], -dir[1], -dir[2]).normalized();
+            const double diff = std::max(0.0, normal.dot(lightDir));
+            if (diff <= 0.0) break;
+            const math::Point3D shadowOrigin = hitPoint + (normal * 0.001);
+            if (IsInShadow(objects, shadowOrigin, lightDir, 1e30)) break;
+            const double i = diff * light->GetIntensity();
+            r += base[0] * lr * i;
+            g += base[1] * lg * i;
+            b += base[2] * lb * i;
+            break;
+        }
+        case LightType::Point: {
+            const auto pos = light->GetDirection();
+            const math::Point3D lightPos(pos[0], pos[1], pos[2]);
+            const math::Vector3D toLight = lightPos - hitPoint;
+            const double distToLight = toLight.length();
+            const math::Vector3D lightDir = toLight / distToLight;
+            const double diff = std::max(0.0, normal.dot(lightDir));
+            if (diff <= 0.0) break;
+            const math::Point3D shadowOrigin = hitPoint + (normal * 0.001);
+            if (IsInShadow(objects, shadowOrigin, lightDir, distToLight)) break;
+            const double i = diff * light->GetIntensity();
+            r += base[0] * lr * i;
+            g += base[1] * lg * i;
+            b += base[2] * lb * i;
+            break;
+        }
+        default:
+            break;
+    }
+}
+ 
 std::array<int, 3> Renderer::ComputeShading(
     const std::vector<std::unique_ptr<IObject>>& objects,
     const IObject* hitObject,
@@ -89,58 +147,28 @@ std::array<int, 3> Renderer::ComputeShading(
     const std::vector<std::unique_ptr<ILight>>& lights)
 {
     (void)ray;
-
+ 
     const math::Vector3D normal = hitObject->GetNormal(hitPoint).normalized();
     const std::array<int, 3> base = hitObject->GetColor();
-
-    double totalIntensity = 0.0;
-
+    double r = 0.0, g = 0.0, b = 0.0;
+ 
     if (lights.empty()) {
         const math::Vector3D fallbackDir = math::Vector3D(-0.4, -1.0, -0.6).normalized() * -1.0;
-        totalIntensity = 0.15 + std::max(0.0, normal.dot(fallbackDir)) * 0.85;
+        const double intensity = 0.15 + std::max(0.0, normal.dot(fallbackDir)) * 0.85;
+        r = base[0] * intensity;
+        g = base[1] * intensity;
+        b = base[2] * intensity;
     } else {
         for (const auto& light : lights) {
             if (!light) continue;
-            switch (light->GetType()) {
-                case LightType::Ambient:
-                    totalIntensity += light->GetIntensity();
-                    break;
-                case LightType::Directional: {
-                    const auto dir = light->GetDirection();
-                    const math::Vector3D lightDir = math::Vector3D(
-                        -dir[0], -dir[1], -dir[2]).normalized();
-                    const double diff = std::max(0.0, normal.dot(lightDir));
-                    if (diff <= 0.0) break;
-                    const math::Point3D shadowOrigin = hitPoint + (normal * 0.001);
-                    if (!IsInShadow(objects, shadowOrigin, lightDir, 1e30))
-                        totalIntensity += diff * light->GetIntensity();
-                    break;
-                }
-                case LightType::Point: {
-                    const auto pos = light->GetDirection();
-                    const math::Point3D lightPos(pos[0], pos[1], pos[2]);
-                    const math::Vector3D toLight = lightPos - hitPoint;
-                    const double distToLight = toLight.length();
-                    const math::Vector3D lightDir = toLight / distToLight;
-                    const double diff = std::max(0.0, normal.dot(lightDir));
-                    if (diff <= 0.0) break;
-                    const math::Point3D shadowOrigin = hitPoint + (normal * 0.001);
-                    if (!IsInShadow(objects, shadowOrigin, lightDir, distToLight))
-                        totalIntensity += diff * light->GetIntensity();
-                    break;
-                }
-                default:
-                    break;
-            }
+            ComputeLightContribution(objects, light.get(), normal, hitPoint, base, r, g, b);
         }
     }
-
-    const double intensity = std::clamp(totalIntensity, 0.0, 1.0);
-    return {
-        static_cast<int>(std::clamp(static_cast<double>(base[0]) * intensity, 0.0, 255.0)),
-        static_cast<int>(std::clamp(static_cast<double>(base[1]) * intensity, 0.0, 255.0)),
-        static_cast<int>(std::clamp(static_cast<double>(base[2]) * intensity, 0.0, 255.0))
+ 
+    const auto clamp = [](double v) -> int {
+        return static_cast<int>(std::clamp(v, 0.0, 255.0));
     };
+    return {clamp(r), clamp(g), clamp(b)};
 }
 
 void Renderer::ComputePixel(

@@ -31,7 +31,7 @@ private:
     std::array<int, 3> _color;
 
 public:
-    Sphere(const math::Point3D& center, double radius, const std::array<int, 3>& color);
+    Sphere(const math::Point3D& center, double radius, const std::array<int, 3>& color, const Material& material = {});
     ~Sphere() override = default;
 
     std::array<int, 3> GetColor() const override;

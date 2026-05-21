@@ -9,8 +9,8 @@
 
 namespace raytracer::plugins {
 
-Sphere::Sphere(const math::Point3D& center, double radius, const std::array<int, 3>& color)
-    : AObject(nullptr), _center(center), _radius(radius), _color(color)
+Sphere::Sphere(const math::Point3D& center, double radius, const std::array<int, 3>& color, const Material& material)
+    : AObject(nullptr, material), _center(center), _radius(radius), _color(color)
 {
     if (radius < 0.0)
         throw Error("Sphere radius cannot be negative");
@@ -90,8 +90,9 @@ extern "C" {
                 g = std::stoi(params.at("color.g"));
             if (params.count("color.b") && !params.at("color.b").empty())
                 b = std::stoi(params.at("color.b"));
+            const Material material = ParseMaterial(params);
 
-            return new raytracer::plugins::Sphere(math::Point3D(x, y, z), radius, {r, g, b});
+            return new raytracer::plugins::Sphere(math::Point3D(x, y, z), radius, {r, g, b}, material);
         } catch (const std::exception& e) {
             throw Error(std::string("Error creating sphere: ") + e.what());
             return nullptr;

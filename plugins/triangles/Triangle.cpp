@@ -18,8 +18,8 @@
 namespace raytracer::plugins {
 
 Triangle::Triangle(const math::Point3D& v0, const math::Point3D& v1, const math::Point3D& v2, 
-                   const std::array<int, 3>& color)
-    : AObject(nullptr), _v0(v0), _v1(v1), _v2(v2), _color(color)
+                   const std::array<int, 3>& color, const Material& material)
+    : AObject(nullptr, material), _v0(v0), _v1(v1), _v2(v2), _color(color)
 {
     // Compute face normal using cross product: (v1 - v0) × (v2 - v0)
     const math::Vector3D edge1 = v1 - v0;
@@ -135,11 +135,12 @@ IObject* getObject(std::map<std::string, std::string> params)
             g = std::stoi(params.at("color.g"));
         if (params.count("color.b") && !params.at("color.b").empty())
             b = std::stoi(params.at("color.b"));
+        const Material material = ParseMaterial(params);
 
         return new Triangle(math::Point3D(v0_x, v0_y, v0_z),
                            math::Point3D(v1_x, v1_y, v1_z),
                            math::Point3D(v2_x, v2_y, v2_z),
-                           {r, g, b});
+                           {r, g, b}, material);
     } catch (const std::exception& e) {
         throw Error(std::string("Error creating triangle: ") + e.what());
         return nullptr;

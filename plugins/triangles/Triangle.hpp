@@ -29,7 +29,7 @@ private:
 
 public:
     Triangle(const math::Point3D& v0, const math::Point3D& v1, const math::Point3D& v2, 
-             const std::array<int, 3>& color);
+             const std::array<int, 3>& color, const Material& material = {});
     ~Triangle() override = default;
 
     std::array<int, 3> GetColor() const override;

@@ -30,7 +30,7 @@ private:
     std::array<int, 3> _color;
 
 public:
-    Plane(const math::Point3D& origin, const math::Vector3D& normal, const std::array<int, 3>& color);
+    Plane(const math::Point3D& origin, const math::Vector3D& normal, const std::array<int, 3>& color, const Material& material = {});
     ~Plane() override = default;
 
     std::array<int, 3> GetColor() const override;

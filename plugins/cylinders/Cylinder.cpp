@@ -5,8 +5,8 @@
 
 namespace raytracer::plugins {
 
-Cylinder::Cylinder(const math::Point3D& center, const math::Vector3D& axis, double radius, double height, const std::array<int,3>& color)
-    : AObject(nullptr), _center(center), _axis(axis.lengthSquared() == 0.0 ? math::Vector3D(0.0,0.0,1.0) : axis.normalized()), _radius(radius), _height(height), _color(color)
+Cylinder::Cylinder(const math::Point3D& center, const math::Vector3D& axis, double radius, double height, const std::array<int,3>& color, const Material& material)
+    : AObject(nullptr, material), _center(center), _axis(axis.lengthSquared() == 0.0 ? math::Vector3D(0.0,0.0,1.0) : axis.normalized()), _radius(radius), _height(height), _color(color)
 {
 }
 
@@ -144,7 +144,8 @@ extern "C" {
             if (params.count("color.b") && !params.at("color.b").empty())
                 b = std::stoi(params.at("color.b"));
 
-            return new Cylinder(math::Point3D(x,y,z), math::Vector3D(axisX,axisY,axisZ), radius, height, {r,g,b});
+            const Material material = ParseMaterial(params);
+            return new Cylinder(math::Point3D(x, y, z), math::Vector3D(axisX, axisY, axisZ), radius, height, {r, g, b}, material);
         } catch (const std::exception &e) {
             throw Error(std::string("Error creating cylinder: ") + e.what());
         }

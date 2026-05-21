@@ -95,6 +95,12 @@ private:
         const math::Point3D& hitPoint,
         const core::Ray& ray
     );
+
+    std::array<int, 3> TraceRay(
+        const std::vector<std::unique_ptr<IObject>>& objects,
+        const core::Ray& ray,
+        int depth
+    );
 };
 
 } // namespace raytracer::threading

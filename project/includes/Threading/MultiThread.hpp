@@ -29,7 +29,7 @@ public:
     ~MultiThread() = default;
 
     bool isEnd(void);
-    int Compute(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector< std::vector<Tile>>& line, std::size_t y, std::size_t max, std::size_t& CalculingRow);
+    int Compute(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& line, std::size_t y, std::size_t max, std::size_t& CalculingRow);
 
     int GetTreadNumber(void) {return numThreads;};
 };

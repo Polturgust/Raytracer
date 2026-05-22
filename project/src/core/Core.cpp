@@ -34,7 +34,7 @@ void Core::Init() {
     sfml.emplace(_x, _y);
     try {
         Objects = _reader->GetObjects();
-        Lights = _reader->GetLights();
+        Lights  = _reader->GetLights();
     } catch (const IError& e) {
         if (e.code() == 84)
             throw Error("Core : " + static_cast<std::string>(e.what()));

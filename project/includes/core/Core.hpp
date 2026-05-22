@@ -45,6 +45,7 @@ class Core {
 
     std::vector<std::unique_ptr<IObject>> Objects;
     std::vector<std::unique_ptr<ILight>> Lights;
+
 public:
     std::vector<std::vector<Tile>> map;
 
@@ -52,7 +53,6 @@ public:
     ~Core() = default;
 
     void Run();
-
     void Init();
     void SetReader(std::unique_ptr<IReader> reader);
     IReader& GetReader();

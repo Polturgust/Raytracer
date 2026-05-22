@@ -78,6 +78,20 @@ double CfgReader::GetCameraFieldOfView() {
     return fov;
 }
 
+std::vector<std::unique_ptr<ILight>> CfgReader::GetLights() {
+    std::vector<std::unique_ptr<ILight>> lights;
+
+    // Tous les types de lumières sont des plugins chargés comme sublists
+    const std::vector<std::string> lightTypes = {"ambient", "directional", "point"};
+
+    for (const auto& type : lightTypes) {
+        auto sub = loadSubList<ILight>("lights", type);
+        for (auto& l : sub)
+            lights.push_back(std::move(l));
+    }
+    return lights;
+}
+
 void CfgReader::TakeOneValue(const libconfig::Setting& cfg, std::map<std::string, std::string>& params, const std::string& prefix) {
     switch (cfg.getType()) {
         case libconfig::Setting::TypeString: {

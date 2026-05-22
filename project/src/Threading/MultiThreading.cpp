@@ -16,7 +16,15 @@ bool MultiThread::isEnd(void) {
     return 1;
 }
 
-int MultiThread::Compute(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector< std::vector<Tile>>& map, std::size_t start, std::size_t max, std::size_t& CalculingRow) {
+int MultiThread::Compute(
+    const std::vector<std::unique_ptr<IObject>>& objects,
+    const std::vector<std::unique_ptr<ILight>>& lights,
+    const render::Camera& camera,
+    std::vector<std::vector<Tile>>& map,
+    std::size_t start,
+    std::size_t max,
+    std::size_t& CalculingRow)
+{
     for (auto& t: thread)
         t.get();
     thread.clear();

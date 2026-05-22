@@ -11,6 +11,10 @@ namespace raytracer {
 
 void DefaultManager::Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map) {
     _state = WORKING;
+    if (CalculatedRow >= map.size()) {
+        _state = FINISH;
+        return;
+    }
     if (_multiThread.isEnd()) {
         if (CalculatedRow != 0) {
             if (CalculingRow == CalculatedRow)

@@ -20,6 +20,7 @@
     #include "SoType.hpp"
     #include "Warning.hpp"
     #include "Error.hpp"
+    #include "FileNotFound.hpp"
 
 namespace raytracer {
 

@@ -10,6 +10,7 @@
     #include <cstdint>
     #include <memory>
     #include <queue>
+    #include <sstream>
     #include <string>
     #include <vector>
     #include <iostream>
@@ -51,11 +52,17 @@ private:
     std::vector<std::string> _pluginsToFetch;
     std::size_t _pluginIndex = 0;
 
+    std::size_t start = 0;
+    std::size_t end = 0;
+    std::size_t Computed = 0;
+
     void ConnectIfNeeded();
     void DoPoll();
+    void SendMsg(const std::string& str);
     void Advance();
     void ProcessActiveStates(Core& core);
     void ProcessWaitingStates(Core& core);
+    void StreamResults(std::vector<std::vector<Tile>>& map);
 
 public:
     ClientManager(const std::string& ip, std::uint16_t port);
@@ -71,4 +78,4 @@ public:
 
 }
 
-#endif  
+#endif

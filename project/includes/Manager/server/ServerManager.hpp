@@ -26,6 +26,8 @@ struct Client {
     std::string cmd = "";
     bool doWrite = false;
     bool doRead = false;
+    bool CanCompute = false;
+    std::size_t ThreadAviable = 0;
     std::size_t Uid;
     std::vector<std::string> MsgQueu;
 
@@ -39,10 +41,23 @@ class ServerManager : public AManager {
     Poller _poller;
     std::vector<Client> _clients;
 
+    std::vector<std::vector<Tile>>* _map = nullptr;
+    std::size_t _nextRow = 0;
+
+    bool _selfComputing = false;
+    std::size_t _selfStart = 0;
+    std::size_t _selfEnd = 0;
+    std::size_t _selfComputed = 0;
+    std::size_t _outstanding = 0;
+
     void HandleCommand(Client& cl, const std::string& line);
     void HandleFGet(Client& cl, std::istringstream& iss);
+    void HandleReady(Client& cl, std::istringstream& iss);
+    void HandleFPut(Client& cl, std::istringstream& iss);
     void Reply(Client& cl, const std::string& message);
     void DoPoll();
+    void AssignWork();
+    void SelfCompute(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map);
 
     std::size_t GetUid(void);
 public:

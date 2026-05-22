@@ -7,25 +7,9 @@
 
 #include "ServerManager.hpp"
 
+#include <arpa/inet.h>
+
 namespace raytracer {
-
-static bool IsValidPluginPath(const std::string& p) {
-    const std::string prefix = "plugins/raytracer_";
-    const std::string suffix = ".so";
-
-    if (p.find("..") != std::string::npos)
-        return false;
-    if (p.size() <= prefix.size() + suffix.size())
-        return false;
-    if (p.compare(0, prefix.size(), prefix) != 0)
-        return false;
-    if (p.compare(p.size() - suffix.size(), suffix.size(), suffix) != 0)
-        return false;
-    const std::string middle = p.substr(prefix.size(), p.size() - prefix.size() - suffix.size());
-    if (middle.empty() || middle.find('/') != std::string::npos)
-        return false;
-    return true;
-}
 
 void ServerManager::Reply(Client& cl, const std::string& message) {
     _logger.LogSend(message, cl.Uid);
@@ -41,21 +25,16 @@ void ServerManager::HandleFGet(Client& cl, std::istringstream& iss) {
         return;
     }
 
-    std::string resolved;
+    std::string realpath;
     std::string okFilename;
     if (path == "ConfigueFile") {
-        resolved = _configFile;
+        realpath = _configFile;
         const auto slash = _configFile.find_last_of('/');
         okFilename = (slash == std::string::npos) ? _configFile : _configFile.substr(slash + 1);
-    } else if (IsValidPluginPath(path)) {
-        resolved = path;
-    } else {
-        Reply(cl, "404 NOT FOUND");
-        return;
-    }
-
+    } else
+        realpath = path;
     {
-        std::ifstream test(resolved, std::ios::binary);
+        std::ifstream test(realpath, std::ios::binary);
         if (!test.is_open()) {
             Reply(cl, "404 NOT FOUND");
             return;
@@ -70,7 +49,7 @@ void ServerManager::HandleFGet(Client& cl, std::istringstream& iss) {
         return;
     }
     try {
-        FileSender::Stream(data, resolved);
+        FileSender::Stream(data, realpath);
     } catch (const IError&) {
         Reply(cl, "500 ERROR");
         return;
@@ -82,13 +61,93 @@ void ServerManager::HandleFGet(Client& cl, std::istringstream& iss) {
         Reply(cl, "200 OK " + okFilename);
 }
 
+void ServerManager::HandleReady(Client& cl, std::istringstream& iss) {
+    std::size_t threads = 0;
+    if (!(iss >> threads) || threads == 0) {
+        Reply(cl, "400 BAD REQUEST");
+        return;
+    }
+    cl.ThreadAviable = threads;
+    cl.CanCompute = true;
+}
+
+void ServerManager::HandleFPut(Client& cl, std::istringstream& iss) {
+    std::string ip;
+    std::uint16_t port = 0;
+    if (!(iss >> ip >> port)) {
+        Reply(cl, "400 BAD REQUEST");
+        return;
+    }
+    if (!_map || _map->empty() || (*_map)[0].empty()) {
+        Reply(cl, "500 NO MAP");
+        return;
+    }
+
+    TcpSocket data;
+    try {
+        data.Connect(ip, port);
+    } catch (const IError&) {
+        Reply(cl, "503 NO CONNECT");
+        return;
+    }
+
+    try {
+        std::uint32_t y_net = 0;
+        data.ReceiveExact(reinterpret_cast<char*>(&y_net), 4);
+        const std::uint32_t y_start = ntohl(y_net);
+
+        std::vector<std::uint8_t> buf;
+        char chunk[4096];
+        while (true) {
+            const std::size_t n = data.ReceiveBlock(chunk, sizeof(chunk));
+            if (n == 0)
+                break;
+            buf.insert(buf.end(),
+                       reinterpret_cast<std::uint8_t*>(chunk),
+                       reinterpret_cast<std::uint8_t*>(chunk) + n);
+        }
+
+        const std::size_t width = (*_map)[0].size();
+        const std::size_t height = _map->size();
+        const std::size_t pixelCount = buf.size() / 3;
+        for (std::size_t i = 0; i < pixelCount; ++i) {
+            const std::size_t y = y_start + i / width;
+            const std::size_t x = i % width;
+            if (y >= height || x >= width)
+                break;
+            (*_map)[y][x].SetColor({buf[3 * i], buf[3 * i + 1], buf[3 * i + 2]});
+            (*_map)[y][x].SetState(COMPUTED);
+        }
+    } catch (const IError&) {
+        Reply(cl, "500 ERROR");
+        return;
+    }
+    if (_outstanding > 0)
+        --_outstanding;
+    Reply(cl, "200 OK");
+}
+
 void ServerManager::HandleCommand(Client& cl, const std::string& line) {
     std::istringstream iss(line);
     std::string cmd;
+    std::size_t code = 0;
     iss >> cmd;
     _logger.LogReceive(line, cl.Uid);
+    try {
+        code = std::stoul(cmd);
+    } catch (...) {}
+    if (code != 0)
+        return;
     if (cmd == "FGET") {
         HandleFGet(cl, iss);
+        return;
+    }
+    if (cmd == "READY") {
+        HandleReady(cl, iss);
+        return;
+    }
+    if (cmd == "FPUT") {
+        HandleFPut(cl, iss);
         return;
     }
     Reply(cl, "400 BAD REQUEST");
@@ -135,7 +194,7 @@ void ServerManager::DoPoll() {
     if (_poller.Revents(0) & POLLIN) {
         try {
             Client cl(_listen.Accept(), GetUid());
-            _logger.LogReceive("New conexion.", cl.Uid);
+            _logger.LogReceive("New conexion." , cl.Uid);
             _clients.emplace_back(std::move(cl));
         } catch (const IError& e) {
             std::cerr << "ServerManager: " << e.what();
@@ -156,12 +215,48 @@ std::size_t ServerManager::GetUid() {
     return _clients.size() + 1;
 }
 
-void ServerManager::Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map) {
-    (void)map;
-    (void)objects;
-    (void)lights;
-    (void)camera;
+void ServerManager::AssignWork() {
+    if (!_map || _map->empty())
+        return;
+    const std::size_t height = _map->size();
+    for (auto& cl : _clients) {
+        if (!cl.CanCompute)
+            continue;
+        if (_nextRow >= height)
+            continue;
+        const std::size_t start = _nextRow;
+        const std::size_t end = std::min(_nextRow + cl.ThreadAviable, height);
+        std::ostringstream oss;
+        oss << "COMPUTE " << start << " " << end;
+        Reply(cl, oss.str());
+        cl.CanCompute = false;
+        _nextRow = end;
+        ++_outstanding;
+    }
+}
 
+void ServerManager::SelfCompute(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map) {
+    if (_selfComputing) {
+        if (!_multiThread.isEnd())
+            return;
+        for (std::size_t y = _selfStart; y < _selfEnd && y < map.size(); ++y)
+            for (std::size_t x = 0; x < map[y].size(); ++x)
+                map[y][x].SetState(COMPUTED);
+        _selfComputing = false;
+    }
+    if (_nextRow >= map.size())
+        return;
+    const std::size_t nthreads = static_cast<std::size_t>(_multiThread.GetTreadNumber());
+    _selfStart = _nextRow;
+    _selfEnd = std::min(_nextRow + nthreads, map.size());
+    _nextRow = _selfEnd;
+    _selfComputed = 0;
+    _multiThread.Compute(objects, lights, camera, map, _selfStart, _selfEnd, _selfComputed);
+    _selfComputing = true;
+}
+
+void ServerManager::Update(const std::vector<std::unique_ptr<IObject>>& objects, const std::vector<std::unique_ptr<ILight>>& lights, const render::Camera& camera, std::vector<std::vector<Tile>>& map) {
+    _map = &map;
     DoPoll();
 
     for (auto& cl : _clients) {
@@ -196,6 +291,14 @@ void ServerManager::Update(const std::vector<std::unique_ptr<IObject>>& objects,
             cl.MsgQueu.clear();
             cl.doWrite = false;
         }
+    }
+
+    AssignWork();
+    SelfCompute(objects, lights, camera, map);
+
+    if (_nextRow >= map.size() && !_selfComputing && _outstanding == 0) {
+        _logger.LogSend("All work done, server finishing.");
+        _state = FINISH;
     }
 }
 

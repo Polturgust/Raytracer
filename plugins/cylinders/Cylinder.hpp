@@ -19,11 +19,11 @@ private:
     math::Point3D _center;
     math::Vector3D _axis;
     double _radius;
-    double _height; // <=0 means infinite
+    double _height;
     std::array<int,3> _color;
 
 public:
-    Cylinder(const math::Point3D& center, const math::Vector3D& axis, double radius, double height, const std::array<int,3>& color);
+    Cylinder(const math::Point3D& center, const math::Vector3D& axis, double radius, double height, const std::array<int,3>& color, const Material& material = {});
     ~Cylinder() override = default;
 
     std::array<int,3> GetColor() const override;

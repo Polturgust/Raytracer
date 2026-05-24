@@ -21,19 +21,19 @@ namespace raytracer::plugins {
 
 class Triangle : public AObject {
 private:
-    math::Point3D _v0;  // First vertex
-    math::Point3D _v1;  // Second vertex
-    math::Point3D _v2;  // Third vertex
-    math::Vector3D _normal;  // Face normal (for flat shading)
+    math::Point3D _v0;
+    math::Point3D _v1;
+    math::Point3D _v2;
+    math::Vector3D _normal;
     std::array<int, 3> _color;
 
 public:
     Triangle(const math::Point3D& v0, const math::Point3D& v1, const math::Point3D& v2, 
-             const std::array<int, 3>& color);
+             const std::array<int, 3>& color, const Material& material = {});
     ~Triangle() override = default;
 
     std::array<int, 3> GetColor() const override;
-    math::Point3D GetPosition() const override;  // Returns centroid
+    math::Point3D GetPosition() const override;
     bool Intersect(const core::Ray& ray, double& distance) const override;
     math::Vector3D GetNormal(const math::Point3D& point) const override;
 };

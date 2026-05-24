@@ -49,8 +49,8 @@ math::Vector3D Triangle::getNormal() const {
     return edge1.cross(edge2).normalized();
 }
 
-Mesh::Mesh(const std::array<int, 3>& color, const math::Point3D& position, const math::Vector3D& rotation)
-    : _color(color), _position(position), _rotation(rotation) {}
+Mesh::Mesh(const std::array<int, 3>& color, const math::Point3D& position, const math::Vector3D& rotation, const Material& material)
+    : _color(color), _material(material), _position(position), _rotation(rotation) {}
 
 void Mesh::addTriangle(const Triangle& triangle) {
     _triangles.push_back(triangle);
@@ -58,6 +58,10 @@ void Mesh::addTriangle(const Triangle& triangle) {
 
 std::array<int, 3> Mesh::GetColor() const {
     return _color;
+}
+
+Material Mesh::GetMaterial() const {
+    return _material;
 }
 
 math::Point3D Mesh::GetPosition() const {
@@ -304,7 +308,8 @@ IObject* getObject(std::map<std::string, std::string> params) {
         if (params.count("rotation.z") && !params.at("rotation.z").empty())
             rot_z = std::stod(params.at("rotation.z"));
 
-        Mesh* mesh = new Mesh({r, g, b}, math::Point3D(pos_x, pos_y, pos_z), math::Vector3D(rot_x, rot_y, rot_z));
+        const Material material = ParseMaterial(params);
+        Mesh* mesh = new Mesh({r, g, b}, math::Point3D(pos_x, pos_y, pos_z), math::Vector3D(rot_x, rot_y, rot_z), material);
 
         std::ifstream file(filepath);
         if (!file.is_open())

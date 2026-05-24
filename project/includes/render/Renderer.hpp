@@ -136,6 +136,13 @@ private:
         const core::Ray& ray,
         const std::vector<std::unique_ptr<ILight>>& lights
     );
+
+    std::array<int, 3> TraceRay(
+        const std::vector<std::unique_ptr<IObject>>& objects,
+        const core::Ray& ray,
+        int depth,
+        const std::vector<std::unique_ptr<ILight>>& lights
+    );
 };
 
 } // namespace raytracer::threading

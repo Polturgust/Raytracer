@@ -9,8 +9,8 @@
 
 namespace raytracer::plugins {
 
-Plane::Plane(const math::Point3D& origin, const math::Vector3D& normal, const std::array<int, 3>& color)
-    : AObject(nullptr), _origin(origin), _normal(normal.normalized()), _color(color)
+Plane::Plane(const math::Point3D& origin, const math::Vector3D& normal, const std::array<int, 3>& color, const Material& material)
+    : AObject(nullptr, material), _origin(origin), _normal(normal.normalized()), _color(color)
 {
 }
 
@@ -84,10 +84,12 @@ IObject* getObject(std::map<std::string, std::string> params)
             g = std::stoi(params.at("color.g"));
         if (params.count("color.b") && !params.at("color.b").empty())
             b = std::stoi(params.at("color.b"));
+        const Material material = ParseMaterial(params);
 
         return new Plane(math::Point3D(origin_x, origin_y, origin_z),
                         math::Vector3D(normal_x, normal_y, normal_z),
-                        {r, g, b});
+                        {r, g, b},
+                        material);
     } catch (const std::exception& e) {
         throw Error(std::string("Error creating plane: ") + e.what());
         return nullptr;

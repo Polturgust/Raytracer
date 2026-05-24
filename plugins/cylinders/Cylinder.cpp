@@ -5,8 +5,8 @@
 
 namespace raytracer::plugins {
 
-Cylinder::Cylinder(const math::Point3D& center, const math::Vector3D& axis, double radius, double height, const std::array<int,3>& color)
-    : AObject(nullptr), _center(center), _axis(axis.lengthSquared() == 0.0 ? math::Vector3D(0.0,0.0,1.0) : axis.normalized()), _radius(radius), _height(height), _color(color)
+Cylinder::Cylinder(const math::Point3D& center, const math::Vector3D& axis, double radius, double height, const std::array<int,3>& color, const Material& material)
+    : AObject(nullptr, material), _center(center), _axis(axis.lengthSquared() == 0.0 ? math::Vector3D(0.0,0.0,1.0) : axis.normalized()), _radius(radius), _height(height), _color(color)
 {
 }
 
@@ -56,7 +56,6 @@ bool Cylinder::Intersect(const core::Ray& ray, double& distance) const {
     if (valid(t1))
         best = std::min(best, t1);
 
-    // caps
     if (_height > 0.0) {
         double half = _height*0.5;
         double denom = d.dot(_axis);
@@ -85,12 +84,10 @@ bool Cylinder::Intersect(const core::Ray& ray, double& distance) const {
 }
 
 math::Vector3D Cylinder::GetNormal(const math::Point3D& point) const {
-    // compute normal at point (body or cap)
     if (_height > 0.0) {
         const double half = _height*0.5;
         double proj = (point - _center).dot(_axis);
         if (std::abs(std::abs(proj) - half) < 1e-4) {
-            // cap normal
             return proj > 0 ? _axis : (_axis * -1.0);
         }
     }
@@ -144,7 +141,8 @@ extern "C" {
             if (params.count("color.b") && !params.at("color.b").empty())
                 b = std::stoi(params.at("color.b"));
 
-            return new Cylinder(math::Point3D(x,y,z), math::Vector3D(axisX,axisY,axisZ), radius, height, {r,g,b});
+            const Material material = ParseMaterial(params);
+            return new Cylinder(math::Point3D(x, y, z), math::Vector3D(axisX, axisY, axisZ), radius, height, {r, g, b}, material);
         } catch (const std::exception &e) {
             throw Error(std::string("Error creating cylinder: ") + e.what());
         }

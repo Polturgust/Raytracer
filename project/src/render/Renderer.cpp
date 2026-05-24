@@ -7,7 +7,95 @@
 
 #include "Renderer.hpp"
 
+#include <limits>
+
 namespace raytracer::threading {
+
+namespace {
+
+constexpr double RAY_EPSILON = 0.001;
+constexpr int MAX_RAY_DEPTH = 3;
+
+std::array<int, 3> BlendColors(
+    const std::array<int, 3>& base,
+    const std::array<int, 3>& reflected,
+    const std::array<int, 3>& refracted,
+    const raytracer::Material& material)
+{
+    const auto clampColor = [](double value) -> int {
+        if (value < 0.0)
+            return 0;
+        if (value > 255.0)
+            return 255;
+        return static_cast<int>(value);
+    };
+
+    const double reflective = std::clamp(material.reflection, 0.0, 1.0);
+    const double transparent = std::clamp(material.transparency, 0.0, 1.0);
+    const double localWeight = std::clamp(1.0 - reflective - transparent, 0.0, 1.0);
+
+    return {
+        clampColor(static_cast<double>(base[0]) * localWeight + static_cast<double>(reflected[0]) * reflective + static_cast<double>(refracted[0]) * transparent),
+        clampColor(static_cast<double>(base[1]) * localWeight + static_cast<double>(reflected[1]) * reflective + static_cast<double>(refracted[1]) * transparent),
+        clampColor(static_cast<double>(base[2]) * localWeight + static_cast<double>(reflected[2]) * reflective + static_cast<double>(refracted[2]) * transparent)
+    };
+}
+
+raytracer::math::Vector3D Reflect(const raytracer::math::Vector3D& direction, const raytracer::math::Vector3D& normal)
+{
+    return direction - normal * (2.0 * direction.dot(normal));
+}
+
+bool Refract(
+    const raytracer::math::Vector3D& direction,
+    const raytracer::math::Vector3D& normal,
+    double refractionIndex,
+    raytracer::math::Vector3D& outDirection)
+{
+    if (refractionIndex <= 0.0)
+        return false;
+
+    raytracer::math::Vector3D unitDirection = direction.normalized();
+    raytracer::math::Vector3D unitNormal = normal.normalized();
+    double cosi = std::clamp(unitDirection.dot(unitNormal), -1.0, 1.0);
+    double etai = 1.0;
+    double etat = refractionIndex;
+
+    if (cosi > 0.0) {
+        std::swap(etai, etat);
+        unitNormal = -unitNormal;
+    } else {
+        cosi = -cosi;
+    }
+
+    const double eta = etai / etat;
+    const double k = 1.0 - eta * eta * (1.0 - cosi * cosi);
+    if (k < 0.0)
+        return false;
+
+    outDirection = unitDirection * eta + unitNormal * (eta * cosi - std::sqrt(k));
+    return true;
+}
+
+std::array<int, 3> BackgroundFromRay(const core::Ray& ray)
+{
+    const auto clampColor = [](double value) -> int {
+        if (value < 0.0)
+            return 0;
+        if (value > 255.0)
+            return 255;
+        return static_cast<int>(value);
+    };
+
+    const double ratio = std::clamp((ray.direction.y + 1.0) * 0.5, 0.0, 1.0);
+    return {
+        clampColor(20.0 + 80.0 * ratio),
+        clampColor(40.0 + 120.0 * ratio),
+        clampColor(70.0 + 150.0 * ratio)
+    };
+}
+
+}
 
 std::array<int, 3> Renderer::GenerateSkyColor(std::size_t y, std::size_t height)
 {
@@ -147,7 +235,7 @@ std::array<int, 3> Renderer::ComputeShading(
     const std::vector<std::unique_ptr<ILight>>& lights)
 {
     (void)ray;
- 
+
     const math::Vector3D normal = hitObject->GetNormal(hitPoint).normalized();
     const std::array<int, 3> base = hitObject->GetColor();
     double r = 0.0, g = 0.0, b = 0.0;
@@ -171,6 +259,47 @@ std::array<int, 3> Renderer::ComputeShading(
     return {clamp(r), clamp(g), clamp(b)};
 }
 
+std::array<int, 3> Renderer::TraceRay(
+    const std::vector<std::unique_ptr<IObject>>& objects,
+    const core::Ray& ray,
+    int depth,
+    const std::vector<std::unique_ptr<ILight>>& lights)
+{
+    if (depth <= 0)
+        return BackgroundFromRay(ray);
+
+    double closestDistance = 0.0;
+    const IObject* hitObject = FindClosestIntersection(objects, ray, closestDistance);
+    if (!hitObject)
+        return BackgroundFromRay(ray);
+
+    const math::Point3D hitPoint = ray.at(closestDistance);
+    const std::array<int, 3> localColor = ComputeShading(objects, hitObject, hitPoint, ray, lights);
+    const Material material = hitObject->GetMaterial();
+
+    if (material.reflection <= 0.0 && material.transparency <= 0.0)
+        return localColor;
+
+    math::Vector3D normal = hitObject->GetNormal(hitPoint).normalized();
+    if (ray.direction.dot(normal) > 0.0)
+        normal = -normal;
+
+    const math::Vector3D reflectedDirection = Reflect(ray.direction.normalized(), normal).normalized();
+    const core::Ray reflectedRay(hitPoint + normal * RAY_EPSILON, reflectedDirection);
+    const std::array<int, 3> reflectedColor = TraceRay(objects, reflectedRay, depth - 1, lights);
+
+    std::array<int, 3> refractedColor = BackgroundFromRay(ray);
+    math::Vector3D refractedDirection;
+    if (material.transparency > 0.0 && Refract(ray.direction, normal, material.refraction, refractedDirection)) {
+        const core::Ray refractedRay(hitPoint - normal * RAY_EPSILON, refractedDirection.normalized());
+        refractedColor = TraceRay(objects, refractedRay, depth - 1, lights);
+    } else if (material.transparency > 0.0) {
+        refractedColor = reflectedColor;
+    }
+
+    return BlendColors(localColor, reflectedColor, refractedColor, material);
+}
+
 void Renderer::ComputePixel(
     const std::vector<std::unique_ptr<IObject>>& objects,
     const std::vector<std::unique_ptr<ILight>>& lights,
@@ -183,17 +312,7 @@ void Renderer::ComputePixel(
     tile.SetState(COMPUTING);
 
     const core::Ray ray = GenerateRay(camera, x, y, width);
-    double closestDistance = 0.0;
-    const IObject* hitObject = FindClosestIntersection(objects, ray, closestDistance);
-
-    if (!hitObject) {
-        tile.SetColor(GenerateSkyColor(y, camera.resolution.second));
-        tile.SetState(COMPUTED);
-        return;
-    }
-
-    const math::Point3D hitPoint = ray.at(closestDistance);
-    tile.SetColor(ComputeShading(objects, hitObject, hitPoint, ray, lights));
+    tile.SetColor(TraceRay(objects, ray, MAX_RAY_DEPTH, lights));
     tile.SetState(COMPUTED);
 }
 

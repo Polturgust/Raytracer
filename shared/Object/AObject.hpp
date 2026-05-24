@@ -16,9 +16,12 @@ namespace raytracer {
 
 class AObject : public IObject {
     std::unique_ptr<ITexture> Texture;
+    Material _material;
 public:
-    AObject(std::unique_ptr<ITexture> Texture): Texture(std::move(Texture)) {};
+    AObject(std::unique_ptr<ITexture> Texture, const Material& material = {}) : Texture(std::move(Texture)), _material(material) {};
     ~AObject() override = default;
+
+    Material GetMaterial() const override { return _material; }
 };
 
 }

@@ -56,7 +56,6 @@ bool Cylinder::Intersect(const core::Ray& ray, double& distance) const {
     if (valid(t1))
         best = std::min(best, t1);
 
-    // caps
     if (_height > 0.0) {
         double half = _height*0.5;
         double denom = d.dot(_axis);
@@ -85,12 +84,10 @@ bool Cylinder::Intersect(const core::Ray& ray, double& distance) const {
 }
 
 math::Vector3D Cylinder::GetNormal(const math::Point3D& point) const {
-    // compute normal at point (body or cap)
     if (_height > 0.0) {
         const double half = _height*0.5;
         double proj = (point - _center).dot(_axis);
         if (std::abs(std::abs(proj) - half) < 1e-4) {
-            // cap normal
             return proj > 0 ? _axis : (_axis * -1.0);
         }
     }

@@ -169,7 +169,7 @@ std::array<int, 3> Renderer::ComputeShading(
     const math::Point3D& hitPoint,
     const core::Ray& ray)
 {
-    (void)ray; // Unused for basic diffuse shading
+    (void)ray;
 
     const math::Vector3D normal = hitObject->GetNormal(hitPoint).normalized();
     const math::Vector3D lightDirection = math::Vector3D(-0.4, -1.0, -0.6).normalized() * -1.0;

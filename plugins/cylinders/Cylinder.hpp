@@ -19,7 +19,7 @@ private:
     math::Point3D _center;
     math::Vector3D _axis;
     double _radius;
-    double _height; // <=0 means infinite
+    double _height;
     std::array<int,3> _color;
 
 public:

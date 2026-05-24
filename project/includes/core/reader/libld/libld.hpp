@@ -33,19 +33,16 @@ public:
         if (!handle)
             throw Warning("No file match in plugin with name : " + realpath);
         dlerror();
-        const char* err = dlerror();
-        /*auto getSoType = reinterpret_cast<SoTypeEnum (*) ()> (dlsym(handle, "getSOType"));
-        if (err) {
+        /* Attempt to locate the factory function in the plugin. Use dlerror()
+           after dlsym to detect errors, and guard against calling a null
+           function pointer which would cause a SIGSEGV. */
+        T* (*getObject)(std::map<std::string, std::string>) = reinterpret_cast<T* (*)(std::map<std::string, std::string>)>(dlsym(handle, "getObject"));
+        const char* dlsym_err = dlerror();
+        if (dlsym_err || getObject == nullptr) {
             dlclose(handle);
-            throw Error("So type not found");
+            throw Error(std::string("libld : getObject not found: ") + (dlsym_err ? dlsym_err : "null pointer"));
         }
-        SoTypeEnum type = getSoType();*/
-        T* (*getObject)(std::map<std::string, std::string>) = reinterpret_cast<T* (*)(std::map<std::string, std::string>)> (dlsym(handle, "getObject"));
-        if (err) {
-            dlclose(handle);
-            throw Error("libld : getObject not found.");
-        }
-        return std::unique_ptr<T> (getObject(param));
+        return std::unique_ptr<T>(getObject(param));
     }
 };
 

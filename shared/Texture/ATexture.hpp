@@ -14,8 +14,8 @@
 namespace raytracer {
 
 class ATexture : public ITexture {
-    std::array<int, 4> color; //rgba
-    double reflextion; //1.00 100% 0.00 0%
+    std::array<int, 4> color;
+    double reflextion;
 public:
     ATexture(std::array<int, 4> color, double reflextion): color(color), reflextion(reflextion) {};
     ~ATexture() {};

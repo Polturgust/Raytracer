@@ -44,6 +44,17 @@ class CfgReader : public AReader {
                     try {
                         list.push_back(ldloader.load<T>(GroupeName, param));
                     } catch (const IError& e) {
+                        // If plugin file not found (common when config uses plural names),
+                        // try a singular fallback (e.g., "planes" -> "plane").
+                        if (e.code() == 0 && !GroupeName.empty() && GroupeName.back() == 's') {
+                            std::string alt = GroupeName.substr(0, GroupeName.size() - 1);
+                            try {
+                                list.push_back(ldloader.load<T>(alt, param));
+                                continue;
+                            } catch (const IError& e2) {
+                                (void)e2;
+                            }
+                        }
                         if (e.code() == 0 && std::find(NoOpenFile.begin(), NoOpenFile.end(), GroupeName) == NoOpenFile.end()) {
                             std::cout << e;
                             NoOpenFile.push_back("plugins/raytracer_" + GroupeName + ".so");
@@ -59,6 +70,15 @@ class CfgReader : public AReader {
                 try {
                     list.push_back(ldloader.load<T>(GroupeName, param));
                 } catch (const IError& e) {
+                    if (e.code() == 0 && !GroupeName.empty() && GroupeName.back() == 's') {
+                        std::string alt = GroupeName.substr(0, GroupeName.size() - 1);
+                        try {
+                            list.push_back(ldloader.load<T>(alt, param));
+                            continue;
+                        } catch (const IError& e2) {
+                            (void)e2;
+                        }
+                    }
                     if (e.code() == 0 && std::find(NoOpenFile.begin(), NoOpenFile.end(), GroupeName) == NoOpenFile.end()) {
                         std::cout << e;
                         NoOpenFile.push_back("plugins/raytracer_" + GroupeName + ".so");

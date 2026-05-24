@@ -262,7 +262,8 @@ std::array<int, 3> Renderer::ComputeShading(
 std::array<int, 3> Renderer::TraceRay(
     const std::vector<std::unique_ptr<IObject>>& objects,
     const core::Ray& ray,
-    int depth)
+    int depth,
+    const std::vector<std::unique_ptr<ILight>>& lights)
 {
     if (depth <= 0)
         return BackgroundFromRay(ray);
@@ -273,7 +274,7 @@ std::array<int, 3> Renderer::TraceRay(
         return BackgroundFromRay(ray);
 
     const math::Point3D hitPoint = ray.at(closestDistance);
-    const std::array<int, 3> localColor = ComputeShading(hitObject, hitPoint, ray);
+    const std::array<int, 3> localColor = ComputeShading(objects, hitObject, hitPoint, ray, lights);
     const Material material = hitObject->GetMaterial();
 
     if (material.reflection <= 0.0 && material.transparency <= 0.0)
@@ -285,13 +286,13 @@ std::array<int, 3> Renderer::TraceRay(
 
     const math::Vector3D reflectedDirection = Reflect(ray.direction.normalized(), normal).normalized();
     const core::Ray reflectedRay(hitPoint + normal * RAY_EPSILON, reflectedDirection);
-    const std::array<int, 3> reflectedColor = TraceRay(objects, reflectedRay, depth - 1);
+    const std::array<int, 3> reflectedColor = TraceRay(objects, reflectedRay, depth - 1, lights);
 
     std::array<int, 3> refractedColor = BackgroundFromRay(ray);
     math::Vector3D refractedDirection;
     if (material.transparency > 0.0 && Refract(ray.direction, normal, material.refraction, refractedDirection)) {
         const core::Ray refractedRay(hitPoint - normal * RAY_EPSILON, refractedDirection.normalized());
-        refractedColor = TraceRay(objects, refractedRay, depth - 1);
+        refractedColor = TraceRay(objects, refractedRay, depth - 1, lights);
     } else if (material.transparency > 0.0) {
         refractedColor = reflectedColor;
     }
@@ -311,17 +312,7 @@ void Renderer::ComputePixel(
     tile.SetState(COMPUTING);
 
     const core::Ray ray = GenerateRay(camera, x, y, width);
-    double closestDistance = 0.0;
-    const IObject* hitObject = FindClosestIntersection(objects, ray, closestDistance);
-
-    if (!hitObject) {
-        tile.SetColor(GenerateSkyColor(y, camera.resolution.second));
-        tile.SetState(COMPUTED);
-        return;
-    }
-
-    const math::Point3D hitPoint = ray.at(closestDistance);
-    tile.SetColor(ComputeShading(objects, hitObject, hitPoint, ray, lights));
+    tile.SetColor(TraceRay(objects, ray, MAX_RAY_DEPTH, lights));
     tile.SetState(COMPUTED);
 }
 

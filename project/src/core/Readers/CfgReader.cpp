@@ -89,6 +89,31 @@ std::vector<std::unique_ptr<ILight>> CfgReader::GetLights() {
         for (auto& l : sub)
             lights.push_back(std::move(l));
     }
+
+    // Backwards-compatibility: allow `lights.ambient = 0.25;` scalar in config
+    // by creating an Ambient light plugin when no ambient list was provided.
+    const libconfig::Setting& root = _cfg.getRoot();
+    if (root.exists("lights")) {
+        const libconfig::Setting& sec = root["lights"];
+        double ambientVal = 0.0;
+        // If ambient exists as a scalar (not a group/array), create an ambient light
+        if (sec.exists("ambient") && sec.lookupValue("ambient", ambientVal)) {
+            // ensure we didn't already load any ambient lights via sublist
+            bool hasAmbient = false;
+            for (const auto& lptr : lights) {
+                if (lptr && lptr->GetType() == LightType::Ambient) { hasAmbient = true; break; }
+            }
+            if (!hasAmbient) {
+                std::map<std::string, std::string> params;
+                params["intensity"] = std::to_string(ambientVal);
+                try {
+                    lights.push_back(ldloader.load<ILight>("ambient", params));
+                } catch (const IError& e) {
+                    (void)e; // ignore plugin load failures here
+                }
+            }
+        }
+    }
     return lights;
 }
 

@@ -60,11 +60,12 @@ private:
     std::vector<int> _triIndices;
     std::vector<BVHNode> _bvhNodes;
     std::array<int, 3> _color;
+    Material _material;
     math::Point3D _position;
     math::Vector3D _rotation;
 
 public:
-    Mesh(const std::array<int, 3>& color, const math::Point3D& position = {0, 0, 0}, const math::Vector3D& rotation = {0, 0, 0});
+    Mesh(const std::array<int, 3>& color, const math::Point3D& position = {0, 0, 0}, const math::Vector3D& rotation = {0, 0, 0}, const Material& material = {});
     ~Mesh() override = default;
 
     void buildBVH();
@@ -73,6 +74,7 @@ public:
     void addTriangle(const Triangle& triangle);
     
     std::array<int, 3> GetColor() const override;
+    Material GetMaterial() const override;
     math::Point3D GetPosition() const override;
     math::Vector3D GetRotation() const;
     bool Intersect(const core::Ray& ray, double& distance) const override;

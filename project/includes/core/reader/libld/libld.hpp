@@ -12,8 +12,11 @@
     #include <memory>
     #include <iostream>
     #include <map>
+    #include <vector>
+    #include <string>
 
     #include "IObject.hpp"
+    #include "ILight.hpp"
     #include "SoType.hpp"
     #include "Warning.hpp"
     #include "Error.hpp"
@@ -22,9 +25,14 @@
 namespace raytracer {
 
 class ld {
+    std::vector<void*> _handles;
+
 public:
     ld() {};
-    ~ld() {};
+    ~ld() {
+        for (auto h : _handles)
+            dlclose(h);
+    };
 
     template<typename T>
     std::unique_ptr <T> load(std::string path, std::map<std::string, std::string> param) {
@@ -33,16 +41,32 @@ public:
         if (!handle)
             throw Warning("No file match in plugin with name : " + realpath);
         dlerror();
-        /* Attempt to locate the factory function in the plugin. Use dlerror()
-           after dlsym to detect errors, and guard against calling a null
-           function pointer which would cause a SIGSEGV. */
-        T* (*getObject)(std::map<std::string, std::string>) = reinterpret_cast<T* (*)(std::map<std::string, std::string>)>(dlsym(handle, "getObject"));
-        const char* dlsym_err = dlerror();
-        if (dlsym_err || getObject == nullptr) {
+        auto getSoType = reinterpret_cast<SoTypeEnum (*) ()> (dlsym(handle, "getSOType"));
+        const char* err = dlerror();
+        if (err || !getSoType) {
             dlclose(handle);
-            throw Error(std::string("libld : getObject not found: ") + (dlsym_err ? dlsym_err : "null pointer"));
+            throw Error("libld : getSOType not found in " + realpath + ".\n");
         }
-        return std::unique_ptr<T>(getObject(param));
+        SoTypeEnum type = getSoType();
+        T* (*getObject)(std::map<std::string, std::string>) = nullptr;
+        switch (type) {
+            case OBJECT:
+                getObject = reinterpret_cast<T* (*)(std::map<std::string, std::string>)> (dlsym(handle, "getObject")); break;
+            case LIGHT:
+                getObject = reinterpret_cast<T* (*)(std::map<std::string, std::string>)> (dlsym(handle, "getLight")); break;
+            case Texture:
+                getObject = reinterpret_cast<T* (*)(std::map<std::string, std::string>)> (dlsym(handle, "getTexture")); break;
+            default:
+                dlclose(handle);
+                throw Error("libld : unknown SoTypeEnum in " + realpath + ".\n");
+        }
+        err = dlerror();
+        if (err || !getObject) {
+            dlclose(handle);
+            throw Error("libld : factory function not found in " + realpath + ".\n");
+        }
+        _handles.push_back(handle);
+        return std::unique_ptr<T> (getObject(param));
     }
 };
 

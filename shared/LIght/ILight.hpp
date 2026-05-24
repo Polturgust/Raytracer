@@ -7,16 +7,24 @@
 
 #ifndef ILIGHT_HPP
     #define ILIGHT_HPP
-
-namespace raytracer{
-
-class ILight {
-public:
-    // geters for maths
-};
-
-
-
+    #include <array>
+ 
+namespace raytracer {
+    enum class LightType {
+        Directional,
+        Ambient,
+        Point,
+    };
+    
+    class ILight {
+        public:
+            virtual ~ILight() = default;
+        
+            virtual LightType GetType() const = 0;
+            virtual std::array<double, 3> GetDirection() const = 0;
+            virtual double GetIntensity() const = 0;
+            virtual std::array<int, 3> GetColor() const = 0;
+        };
 }
-
+ 
 #endif

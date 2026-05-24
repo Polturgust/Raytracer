@@ -24,6 +24,29 @@ class CfgReader : public AReader {
     void TakeOneValue(const libconfig::Setting& cfg, std::map<std::string, std::string>& params, const std::string& prefix);
 
     template<typename T>
+    std::vector<std::unique_ptr<T>> loadSubList(const std::string& section, const std::string& name_list) {
+        std::vector<std::unique_ptr<T>> list;
+        const libconfig::Setting& root = _cfg.getRoot();
+        if (!root.exists(section))
+            return list;
+        const libconfig::Setting& sec = root[section.c_str()];
+        if (!sec.exists(name_list))
+            return list;
+        const libconfig::Setting& objects = sec[name_list.c_str()];
+        for (int i = 0; i < objects.getLength(); ++i) {
+            const libconfig::Setting& group = objects[i];
+            std::map<std::string, std::string> param = settingToParams(group);
+            try {
+                list.push_back(ldloader.load<T>(name_list, param));
+            } catch (const IError& e) {
+                if (e.code() == 0 && std::find(NoOpenFile.begin(), NoOpenFile.end(), name_list) == NoOpenFile.end())
+                    NoOpenFile.push_back(name_list);
+            }
+        }
+        return list;
+    }
+
+    template<typename T>
     std::vector<std::unique_ptr<T>> loadLists(std::string name_list) {
         std::vector<std::unique_ptr<T>> list;
         const libconfig::Setting& root = _cfg.getRoot();
@@ -103,9 +126,8 @@ public:
     std::array<int, 3> GetCameraRotation();
     double GetCameraFieldOfView();
 
-    std::vector<std::unique_ptr<IObject>> GetObjects() {return loadLists<IObject>("primitives");};
-    std::vector<std::unique_ptr<ILight>> GetLights() {return loadLists<ILight>("lights");};
-
+    std::vector<std::unique_ptr<IObject>> GetObjects() { return loadLists<IObject>("primitives"); };
+    std::vector<std::unique_ptr<ILight>> GetLights();
 };
 
 }

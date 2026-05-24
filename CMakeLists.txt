@@ -31,11 +31,12 @@ target_include_directories(raytracer
         project/includes/Manager
         project/includes/math
         project/includes/render
-        project/includes/Manager/Default
+        project/includes/Manager/default
         project/includes/Manager/client
         project/includes/Manager/server
         project/includes/security
         project/includes/Error
+        project/includes/Lights
         ${LIBCONFIG_INCLUDE_DIRS}
         ${SFML_INCLUDE_DIRS}
         shared

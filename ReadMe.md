@@ -1,5 +1,13 @@
 # Raytracer
 
+![Language](https://img.shields.io/badge/language-C%2B%2B-00599C?logo=cplusplus&logoColor=white)
+![Build](https://img.shields.io/badge/build-CMake-064F8C?logo=cmake&logoColor=white)
+![Graphics](https://img.shields.io/badge/graphics-SFML-8CC445?logo=sfml&logoColor=white)
+![Rendering](https://img.shields.io/badge/rendering-Ray%20Tracing-FF6F00)
+![Multithreaded](https://img.shields.io/badge/multithreaded-yes-brightgreen)
+![Distributed](https://img.shields.io/badge/distributed-server%2Fclient-blueviolet)
+![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20WSL-FCC624?logo=linux&logoColor=black)
+
 A raytracer is a program that creates images by simulating the way light
 travels in the real world. Instead of drawing shapes on a screen, it follows
 imaginary rays of light for every single pixel, bouncing them off objects,
